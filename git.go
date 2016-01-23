@@ -1,11 +1,11 @@
 package inspector
 
 import (
+	"errors"
 	"github.com/libgit2/git2go"
 	"log"
 	"os"
 	"time"
-	"errors"
 )
 
 // Repo base path.
@@ -70,7 +70,7 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 }
 
 func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *git.Commit) (*git.Diff, error) {
-	if (previousCommit == nil || currentCommit == nil) {
+	if previousCommit == nil || currentCommit == nil {
 		return nil, errors.New("You must pass both commits to get the diff.")
 	}
 

@@ -40,10 +40,12 @@ func (u *Unit) InRange(lineStart int, lineEnd int) bool {
 	return u.LineStart >= lineStart && u.LineStart <= lineEnd && u.LineEnd >= lineStart && u.LineEnd <= lineEnd
 }
 
+// Checks if either the beginning or the end line are contained in the hunk
 func (u *Unit) Intersects(lineStart int, lineEnd int) bool {
 	return (u.LineStart >= lineStart && u.LineStart <= lineEnd) || (u.LineEnd >= lineStart && u.LineEnd <= lineEnd)
 }
 
+// Number of lines that the Unit has
 func (u *Unit) Size() int {
 	return u.LineEnd - u.LineStart
 }
