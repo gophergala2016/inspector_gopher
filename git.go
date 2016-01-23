@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"errors"
 )
 
 // Repo base path.
@@ -70,7 +71,7 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 
 func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *git.Commit) (*git.Diff, error) {
 	if (previousCommit == nil || currentCommit == nil) {
-		return nil, error.Error("You must pass both commits to get the diff.")
+		return nil, errors.New("You must pass both commits to get the diff.")
 	}
 
 	previousTree, err := previousCommit.Tree()
@@ -90,7 +91,7 @@ func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *gi
 		return nil, err
 	}
 
-	return repo.DiffTreeToTree(previousTree, currentTree, options)
+	return repo.DiffTreeToTree(previousTree, currentTree, &options)
 }
 
 //
