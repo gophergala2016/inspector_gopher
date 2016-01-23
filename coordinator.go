@@ -2,7 +2,6 @@ package inspector
 
 import (
 	"github.com/libgit2/git2go"
-	"log"
 )
 
 type Coordinator struct {
@@ -62,9 +61,6 @@ func (c *Coordinator) Heatmap() string {
 
 		return true
 	})
-
-	defer repo.Free()
-	defer CleanTempDir()
 
 	return c.RepoName
 }
