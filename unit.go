@@ -30,7 +30,7 @@ type Unit struct {
 	Type      int
 }
 
-func UnitFromHunk(hunk git.DiffHunk) (*Unit) {
+func UnitFromHunk(file git.DiffFile, hunk git.DiffHunk) (*Unit) {
 	start := 0
 
 	if hunk.NewStart > 3 {
@@ -38,9 +38,11 @@ func UnitFromHunk(hunk git.DiffHunk) (*Unit) {
 	}
 
 	start += hunk.NewStart
+	end := hunk.NewStart + hunk.NewLines
 
-	//TODO: If the hunk ends at the bottom of the file there is no context!
-	end := hunk.NewStart + hunk.NewLines - 4
+	if file.Size - end >= 4 {
+		end -= 4
+	}
 
 	return &Unit {
 		Name: "Hunk",

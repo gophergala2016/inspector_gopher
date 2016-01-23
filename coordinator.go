@@ -33,7 +33,7 @@ func (c *Coordinator) Heatmap() string {
 			//	-	Run unitHunk.Intersects(*unitAst)
 			//	-	Flag if true
 
-			units = append(units, *UnitFromHunk(hunk))
+			units = append(units, *UnitFromHunk(file.NewFile, hunk))
 		})
 
 		return true
