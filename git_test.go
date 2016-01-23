@@ -5,10 +5,13 @@ import (
 	"testing"
 )
 
-const REPO_NAME = "lazartravica/Envy"
+const REPO_ENVY = "lazartravica/Envy"
+const REPO_GIT2GO = "libgit2/git2go"
+const REPO_MUX = "gorilla/mux"
+const REPO_CONSUL = "hashicorp/consul"
 
 func TestGetRepo(t *testing.T) {
-	repo, err := GetRepo(REPO_NAME)
+	repo, err := GetRepo(REPO_ENVY)
 	if err != nil {
 		t.Error(err)
 	}
@@ -18,7 +21,7 @@ func TestGetRepo(t *testing.T) {
 }
 
 func TestRepoWalking(t *testing.T) {
-	repo, err := GetRepo(REPO_NAME)
+	repo, err := GetRepo(REPO_ENVY)
 	if err != nil {
 		t.Error(err)
 	}
@@ -32,7 +35,7 @@ func TestRepoWalking(t *testing.T) {
 }
 
 func TestGetDiff(t *testing.T) {
-	repo, err := GetRepo(REPO_NAME)
+	repo, err := GetRepo(REPO_ENVY)
 	if err != nil {
 		t.Error(err)
 	}
@@ -53,7 +56,7 @@ func TestGetDiff(t *testing.T) {
 }
 
 func TestWalkHunks(t *testing.T) {
-	repo, err := GetRepo(REPO_NAME)
+	repo, err := GetRepo(REPO_ENVY)
 	if err != nil {
 		t.Error(err)
 	}
