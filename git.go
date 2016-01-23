@@ -3,10 +3,10 @@ package inspector
 import (
 	"errors"
 	"github.com/libgit2/git2go"
+	"io/ioutil"
 	"log"
 	"os"
 	"time"
-	"io/ioutil"
 )
 
 var tempDir string

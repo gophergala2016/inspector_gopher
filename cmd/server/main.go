@@ -5,13 +5,20 @@ import (
 	"net/http"
 	"fmt"
 	"github.com/gophergala2016/inspector_gopher"
+	"flag"
 )
 
+var webRoot = flag.String("webroot", "public", "Relative or absolute path to the directory where the static servable files are stored.")
+
 func main() {
-	fs := http.FileServer(http.Dir("public"))
+	flag.Parse()
+
+	fs := http.FileServer(http.Dir(*webRoot))
+
 	http.Handle("/", fs)
 
-	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Starting to serve!")
+		http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		repoUrl := r.URL.Query().Get("repo")
 		coordinator := inspector.NewCoordinator(repoUrl)
 
