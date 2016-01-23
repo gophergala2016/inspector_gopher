@@ -64,7 +64,7 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 		previousCommit.Free()
 	}
 
-	log.Printf("Finished processing repo, duration %d seconds.", time.Now().Unix() - start.Unix())
+	log.Printf("[SUCCESS] duration %d seconds.", time.Now().Unix() - start.Unix())
 
 	return nil
 }
@@ -94,7 +94,6 @@ func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *gi
 	return repo.DiffTreeToTree(previousTree, currentTree, &options)
 }
 
-//
 //	err = diff.ForEach(func(file git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
 //		return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
 //
