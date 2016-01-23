@@ -56,16 +56,3 @@ func parseFileContents(filePath string, contents string) FileRevision {
 
 	return file
 }
-
-func main() {
-	dat, err := ioutil.ReadFile("cmd" + string(os.PathSeparator) + "units" + string(os.PathSeparator) + "to_parse.go")
-
-	check(err)
-
-	parsedFile := parseFileContents("to_parse.go", string(dat))
-
-	for _, unit := range parsedFile.Units {
-		fmt.Printf("Type: %d Name: %s From: %d To: %d\n", unit.Type, unit.Name, unit.LineStart, unit.LineEnd)
-	}
-}
-
