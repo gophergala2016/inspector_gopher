@@ -19,14 +19,21 @@ type Snapshot struct {
 
 // Local representation of a commit.
 type Commit struct {
-	Name string
-	Time time.Time
-	Commit git.Commit
+	Hash      string
+	Message   string
+	Time      time.Time
+	Developer Developer
+}
+
+type Developer struct {
+	Name  string
+	Email string
 }
 
 func main() {
 
 	repoName := "lazartravica/Envy"
+	//	repoName := "libgit2/git2go"
 
 	snapshots, err := parse(repoName)
 	if err != nil {
@@ -50,11 +57,14 @@ func parse(repoName string) ([]Snapshot, error) {
 // Clones repo to disc, if already exists, deletes the existing files first.
 func cloneRepo(repoName string) (*git.Repository, error) {
 	if _, err := os.Stat(clonePath + repoName); err == nil {
-		err = os.RemoveAll(clonePath + repoName)
-		if err != nil {
-			return nil, err
-		}
-		log.Println("Cleaned up repo [" + repoName + "]")
+		//		err = os.RemoveAll(repoName)
+		//		if err != nil {
+		//			return nil, err
+		//		}
+		//		log.Println("Cleaned up repo [" + repoName + "]")
+
+		log.Println("Opened repo [" + repoName + "]")
+		return git.OpenRepository(clonePath + repoName)
 	}
 
 	repo, err := git.Clone("git://github.com/" + repoName + ".git", clonePath + repoName, &git.CloneOptions{})
@@ -81,28 +91,29 @@ func walkRepo(repo *git.Repository) ([]Snapshot, error) {
 	log.Println("Started Processing repo")
 	start := time.Now()
 
-	var prevCommit *git.Commit
+	var parentCommit *git.Commit
 
 	err = walker.Iterate(func(c *git.Commit) bool {
+		if parentCommit != nil {
+			options, err := git.DefaultDiffOptions()
+			if err != nil {
+				return false
+			}
 
-		commit := Commit{
-			Name: c.Message(),
-			Time: c.Author().When,
-		}
+			parentTree, _ := parentCommit.Tree()
+			currentTree, _ := c.Tree()
 
-		log.Printf("%d", len(snapshots))
+			diff, err := repo.DiffTreeToTree(parentTree, currentTree, &options)
+			if err != nil {
+				return false
+			}
 
-		if prevCommit != nil {
-			currTree, _ := c.Tree()
-			prevTree, _ := prevCommit.Tree()
-
-			diffOptions, _ := git.DefaultDiffOptions()
-			diff, _ := repo.DiffTreeToTree(currTree, prevTree, &diffOptions)
-
-			err := diff.ForEach(func(file git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
+			err = diff.ForEach(func(file git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
 				return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
+					log.Println("")
 					log.Printf("Hunk: %v", hunk.Header)
 					return func(line git.DiffLine) error {
+
 						log.Printf("%s %d", line.Content, line.Origin)
 						return nil
 					}, nil
@@ -114,13 +125,23 @@ func walkRepo(repo *git.Repository) ([]Snapshot, error) {
 			}
 		}
 
+		commit := Commit{
+			Hash: c.Id().String(),
+			Message: c.Message(),
+			Time: c.Committer().When,
+			Developer: Developer{
+				Name: c.Committer().Name,
+				Email: c.Committer().Email,
+			},
+		}
+
 		snapshot := Snapshot{
 			Commit: commit,
 		}
 
 		snapshots = append(snapshots, snapshot)
 
-		prevCommit = c
+		parentCommit = c
 		return true
 	})
 	if err != nil {
