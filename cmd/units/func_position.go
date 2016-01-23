@@ -15,9 +15,9 @@ const (
 )
 
 type File struct {
-	Path         string
-	NumberOfLine int
-	Units        []Unit
+	Path          string
+	NumberOfLines int
+	Units         []Unit
 }
 
 type Unit struct {
@@ -51,10 +51,10 @@ func check(e error) {
 	}
 }
 
-func parseFileContents(fileName string, contents string) []Unit {
+func parseFileContents(filePath string, contents string) File {
 	fset := token.NewFileSet()
 
-	f, err := parser.ParseFile(fset, fileName, contents, 0)
+	f, err := parser.ParseFile(fset, filePath, contents, 0)
 
 	check(err)
 
@@ -85,7 +85,9 @@ func parseFileContents(fileName string, contents string) []Unit {
 		return true
 	})
 
-	return units
+	file := File{Path:filePath, NumberOfLines:fset.Position(f.End()).Line, Units:units}
+
+	return file
 }
 
 func main() {
@@ -93,9 +95,9 @@ func main() {
 
 	check(err)
 
-	units := parseFileContents("to_parse.go", string(dat))
+	parsedFile := parseFileContents("to_parse.go", string(dat))
 
-	for _, unit := range units {
+	for _, unit := range parsedFile.Units {
 		fmt.Printf("Type: %d Name: %s From: %d To: %d\n", unit.Type, unit.Name, unit.LineStart, unit.LineEnd)
 	}
 }
