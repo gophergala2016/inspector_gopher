@@ -85,13 +85,16 @@ Generic treemap, based on http://bost.ocks.org/mike/treemap/
         return main(opts, data);
     });
 
+    var width = $(document).width();
+    var height = $(document).height();
+
     var defaults = {
         margin: {top: 24, right: 0, bottom: 0, left: 0},
         rootname: "TOP",
         format: ",d",
         title: "",
-        width: 960,
-        height: 500
+        width: width - 15,
+        height: height * 0.66
     };
 
     function main(o, data) {

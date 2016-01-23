@@ -15,7 +15,7 @@ func check(e error) {
 }
 
 // Extracts all of the functions and structures from the file
-func parseFileContents(filePath string, contents string) FileRevision {
+func ParseFileContents(filePath string, contents string) FileRevision {
 	fset := token.NewFileSet()
 
 	f, err := parser.ParseFile(fset, filePath, contents, 0)
