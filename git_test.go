@@ -46,3 +46,25 @@ func TestGetDiff(t *testing.T) {
 	})
 
 }
+
+func TestWalkHunks(t *testing.T) {
+	repo, err := GetRepo(REPO_NAME)
+	if err != nil {
+		t.Error(err)
+	}
+	defer repo.Free()
+
+	WalkCommits(repo, func(previous, current *git.Commit) bool {
+		diff, err := GetDiff(repo, previous, current)
+		if err != nil {
+			t.Error(err)
+			return false
+		}
+		defer diff.Free()
+
+		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
+		})
+
+		return true
+	})
+}

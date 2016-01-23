@@ -94,18 +94,15 @@ func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *gi
 	return repo.DiffTreeToTree(previousTree, currentTree, &options)
 }
 
-//	err = diff.ForEach(func(file git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
-//		return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
-//
-//			log.Printf("Hunk: %v", hunk.Header)
-//			return nil, nil
-//		}, nil
-//	}, git.DiffDetailHunks)
-//
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	previousCommit = commit
-//	return true
-//}
+type HunkWalkerFunc func(file git.DiffDelta, hunk git.DiffHunk)
+
+func WalkHunks(diff *git.Diff, walker HunkWalkerFunc) error {
+	err := diff.ForEach(func(file git.DiffDelta, process float64) (git.DiffForEachHunkCallback, error) {
+		return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
+			walker(file, hunk)
+			return nil, nil
+		}, nil
+	}, git.DiffDetailHunks)
+
+	return err
+}
