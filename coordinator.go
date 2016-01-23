@@ -62,8 +62,5 @@ func (c *Coordinator) Heatmap() string {
 		return true
 	})
 
-	defer repo.Free()
-	defer CleanTempDir()
-
 	return c.RepoName
 }
