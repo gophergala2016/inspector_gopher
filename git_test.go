@@ -7,16 +7,22 @@ import (
 
 const REPO_NAME = "lazartravica/Envy"
 
-
-func TestGitReadRepo(t *testing.T) {
-	_, err := openRepo(REPO_NAME)
+func TestGetRepo(t *testing.T) {
+	repo, err := GetRepo(REPO_NAME)
+	defer repo.Free()
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 }
 
 func TestRepoWalking(t *testing.T) {
-	WalkCommits(REPO_NAME, func(_ *git.Commit) bool {
+	repo, err := GetRepo(REPO_NAME)
+	defer repo.Free()
+	if err != nil {
+		t.Error(err)
+	}
+
+	WalkCommits(repo, func(_, _ *git.Commit) bool {
 		return true
 	})
 }
