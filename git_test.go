@@ -12,8 +12,8 @@ func TestGetRepo(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 	defer repo.Free()
+
 	defer CleanTempDir()
 }
 
@@ -22,12 +22,12 @@ func TestRepoWalking(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer repo.Free()
 
 	WalkCommits(repo, func(_, _ *git.Commit) bool {
 		return true
 	})
 
-	defer repo.Free()
 	defer CleanTempDir()
 }
 
@@ -36,6 +36,7 @@ func TestGetDiff(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	defer repo.Free()
 
 	WalkCommits(repo, func(previous, current *git.Commit) bool {
 		diff, err := GetDiff(repo, previous, current)
@@ -48,7 +49,6 @@ func TestGetDiff(t *testing.T) {
 		return true
 	})
 
-	defer repo.Free()
 	defer CleanTempDir()
 }
 

@@ -1,19 +1,21 @@
 package inspector
-import "github.com/libgit2/git2go"
+
+import (
+	"github.com/libgit2/git2go"
+)
 
 type Coordinator struct {
-	Repo string
+	RepoName string
 }
 
 func NewCoordinator(repo string) *Coordinator {
 	return &Coordinator{
-		Repo: repo,
+		RepoName: repo,
 	}
 }
 
 func (c *Coordinator) Heatmap() string {
-	repo, _ := GetRepo(c.Repo)
-
+	repo, _ := GetRepo(c.RepoName)
 
 	WalkCommits(repo, func(previous, current *git.Commit) bool {
 		diff, err := GetDiff(repo, previous, current)
@@ -31,5 +33,5 @@ func (c *Coordinator) Heatmap() string {
 	defer repo.Free()
 	defer CleanTempDir()
 
-	return c.Repo
+	return c.RepoName
 }
