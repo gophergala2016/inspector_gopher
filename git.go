@@ -20,7 +20,7 @@ func getTempDir() string {
 }
 
 func CleanTempDir() {
-	os.Remove(getTempDir())
+	os.RemoveAll(getTempDir())
 }
 
 func GetRepo(repoName string) (*git.Repository, error) {
