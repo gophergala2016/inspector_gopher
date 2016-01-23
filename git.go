@@ -1,4 +1,4 @@
-package main
+package inspector
 
 import (
 	"github.com/libgit2/git2go"
@@ -7,48 +7,22 @@ import (
 	"time"
 )
 
-// Path to which to clone repos to when analyzing them.
+// Repo base path.
 const clonePath string = "/tmp/inspector-gopher/"
 
-// Local representation of a commit.
-type Commit struct {
-	Hash      string
-	Message   string
-	Time      time.Time
-	Developer Developer
-}
+type CommitWalkerFunc func(commit *git.Commit) bool
 
-type Developer struct {
-	Name  string
-	Email string
-}
-
-func main() {
-
-	repoName := "lazartravica/Envy"
-	//	repoName := "libgit2/git2go"
-
-	snapshots, err := parse(repoName)
+func WalkCommits(repoName string, walker CommitWalkerFunc) error {
+	repo, err := openRepo(repoName)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	for index, snapshot := range snapshots {
-		log.Printf("Commit number: %d, Time: %s", index, snapshot.Commit.Time)
-	}
-}
-
-func parse(repoName string) ([]Snapshot, error) {
-	repo, err := cloneRepo(repoName)
-	if err != nil {
-		return nil, err
-	}
-
-	return walkRepo(repo)
+	return walkRepo(repo, walker)
 }
 
 // Clones repo to disc, if already exists, deletes the existing files first.
-func cloneRepo(repoName string) (*git.Repository, error) {
+func openRepo(repoName string) (*git.Repository, error) {
 	if _, err := os.Stat(clonePath + repoName); err == nil {
 		log.Println("Opened repo [" + repoName + "]")
 		return git.OpenRepository(clonePath + repoName)
@@ -63,79 +37,62 @@ func cloneRepo(repoName string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func walkRepo(repo *git.Repository) ([]Snapshot, error) {
-	snapshots := []Snapshot{}
-
+func walkRepo(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 	walker, err := repo.Walk()
 	if err != nil {
-		return snapshots, err
+		return err
 	}
+
 	walker.Sorting(git.SortTopological | git.SortReverse)
 	err = walker.PushHead()
 	if err != nil {
-		return snapshots, err
+		return err
 	}
 	log.Println("Started Processing repo")
-	start := time.Now()
 
-	var parentCommit *git.Commit
+	start := time.Now() // Log time passed for processing.
 
-	err = walker.Iterate(func(c *git.Commit) bool {
-		if parentCommit != nil {
-			options, err := git.DefaultDiffOptions()
-			if err != nil {
-				return false
-			}
+	var previousCommit *git.Commit
 
-			parentTree, _ := parentCommit.Tree()
-			currentTree, _ := c.Tree()
-
-			diff, err := repo.DiffTreeToTree(parentTree, currentTree, &options)
-			if err != nil {
-				return false
-			}
-
-			err = diff.ForEach(func(file git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
-				return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
-					log.Println("")
-					log.Printf("Hunk: %v", hunk.Header)
-					return func(line git.DiffLine) error {
-
-						log.Printf("%s %d", line.Content, line.Origin)
-						return nil
-					}, nil
-				}, nil
-			}, git.DiffDetailHunks)
-
-			if err != nil {
-				panic(err)
-			}
+	err = walker.Iterate(func(commit *git.Commit) bool {
+		if (previousCommit == nil) {
+			previousCommit = commit
+			return true
 		}
 
-		commit := Commit{
-			Hash: c.Id().String(),
-			Message: c.Message(),
-			Time: c.Committer().When,
-			Developer: Developer{
-				Name: c.Committer().Name,
-				Email: c.Committer().Email,
-			},
+		options, err := git.DefaultDiffOptions()
+		if err != nil {
+			return false
 		}
 
-		snapshot := Snapshot{
-			Commit: commit,
+		previousTree, _ := previousCommit.Tree()
+		currentTree, _ := commit.Tree()
+
+		diff, err := repo.DiffTreeToTree(previousTree, currentTree, &options)
+		if err != nil {
+			return false
 		}
 
-		snapshots = append(snapshots, snapshot)
+		err = diff.ForEach(func(file git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
+			return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
 
-		parentCommit = c
+				log.Printf("Hunk: %v", hunk.Header)
+				return nil, nil
+			}, nil
+		}, git.DiffDetailHunks)
+
+		if err != nil {
+			panic(err)
+		}
+
+		previousCommit = commit
 		return true
 	})
 	if err != nil {
-		return snapshots, err
+		return err
 	}
 
 	log.Printf("Finished processing repo, duration %d seconds.", time.Now().Unix() - start.Unix())
 
-	return snapshots, nil
+	return nil
 }

@@ -1,4 +1,4 @@
-package main
+package inspector
 
 // Types of unit.
 const (

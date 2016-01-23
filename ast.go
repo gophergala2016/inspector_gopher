@@ -1,12 +1,9 @@
-package main
+package inspector
 
 import (
 	"go/ast"
 	"go/token"
 	"go/parser"
-	"io/ioutil"
-	"os"
-	"fmt"
 )
 
 

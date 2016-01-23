@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"strconv"
 )
 
 // Path to which to clone repos to when analyzing them.
@@ -12,9 +13,7 @@ const clonePath string = "/tmp/inspector-gopher/"
 
 // Snapshots collect data gathered from processing commits.
 type Snapshot struct {
-
 	Commit Commit
-
 }
 
 // Local representation of a commit.
@@ -30,19 +29,38 @@ type Developer struct {
 	Email string
 }
 
+type File struct {
+	Path       string
+	Insertions []CodeBlock
+	Deletions  []CodeBlock
+}
+
+type CodeBlock struct {
+	Start, End int
+}
+
+func newFile(path string) *File {
+	return &File{
+		Path: path,
+		Insertions: []CodeBlock{},
+		Deletions: []CodeBlock{},
+	}
+}
+
 func main() {
 
-	repoName := "lazartravica/Envy"
+	repoName := "BencicAndrej/crAPI"
+	//	repoName := "lazartravica/Envy"
 	//	repoName := "libgit2/git2go"
 
-	snapshots, err := parse(repoName)
+	_, err := parse(repoName)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for index, snapshot := range snapshots {
-		log.Printf("Commit number: %d, Time: %s", index, snapshot.Commit.Time)
-	}
+//	for index, snapshot := range snapshots {
+//		log.Printf("Commit number: %d, Time: %s", index, snapshot.Commit.Time)
+//	}
 }
 
 func parse(repoName string) ([]Snapshot, error) {
@@ -108,16 +126,36 @@ func walkRepo(repo *git.Repository) ([]Snapshot, error) {
 				return false
 			}
 
+			log.Println("COMMIT" + c.Message())
 			err = diff.ForEach(func(file git.DiffDelta, progress float64) (git.DiffForEachHunkCallback, error) {
-				return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
-					log.Println("")
-					log.Printf("Hunk: %v", hunk.Header)
-					return func(line git.DiffLine) error {
+//				blob, _ := repo.LookupBlob(file.NewFile.Oid)
+//
+//				sum := string(blob.Contents())
+//
+//				log.Printf("Name: %s, %d", file.NewFile.Path, len([]byte(sum)))
 
-						log.Printf("%s %d", line.Content, line.Origin)
+				return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
+					log.Printf(
+						"Old range: %s, New range: %s",
+						strconv.Itoa(hunk.OldStart) + "-" + strconv.Itoa(hunk.OldStart + hunk.OldLines),
+						strconv.Itoa(hunk.NewStart) + "-" + strconv.Itoa(hunk.NewStart + hunk.NewLines),
+					)
+					return func(line git.DiffLine) error {
 						return nil
 					}, nil
 				}, nil
+//				newFile := newFile(file.NewFile.Path)
+//
+//				log.Printf("Filepath: %v", file.NewFile.Path)
+//				return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
+//					newFile.Insertions = append(newFile.Insertions, CodeBlock{Start: hunk.NewStart + 3, End: hunk.NewStart + hunk.NewLines - 1 })
+//					newFile.Deletions = append(newFile.Insertions, CodeBlock{Start: hunk.NewStart + 3, End: hunk.NewStart + hunk.NewLines - 1 })
+//					log.Printf("Hunk: %v", hunk.Header)
+//					return func(line git.DiffLine) error {
+//						log.Printf("%s %d, NUMLINES: %d", line.Content, line.Origin, line.NumLines)
+//						return nil
+//					}, nil
+//				}, nil
 			}, git.DiffDetailHunks)
 
 			if err != nil {
