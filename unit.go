@@ -1,4 +1,5 @@
 package inspector
+
 import "github.com/libgit2/git2go"
 
 // Types of unit.
@@ -30,7 +31,7 @@ type Unit struct {
 	Type      int
 }
 
-func UnitFromHunk(file git.DiffFile, hunk git.DiffHunk) (*Unit) {
+func UnitFromHunk(file git.DiffFile, hunk git.DiffHunk) *Unit {
 	start := 0
 
 	if hunk.NewStart > 3 {
@@ -44,11 +45,11 @@ func UnitFromHunk(file git.DiffFile, hunk git.DiffHunk) (*Unit) {
 		end -= 4
 	}
 
-	return &Unit {
-		Name: "Hunk",
+	return &Unit{
+		Name:      "Hunk",
 		LineStart: start,
-		LineEnd: end,
-		Type: UNIT_TYPE_HUNK,
+		LineEnd:   end,
+		Type:      UNIT_TYPE_HUNK,
 	}
 }
 

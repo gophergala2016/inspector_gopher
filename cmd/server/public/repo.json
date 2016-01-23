@@ -1,0 +1,38 @@
+[
+  {
+    "key": "main",
+    "file": "main.go",
+    "unit_type": "func",
+    "value": 0.25500100
+  },
+  {
+    "key": "CreateOsoba",
+    "file": "main.go",
+    "unit_type": "func",
+    "value": 0.127500500
+  },
+  {
+    "key": "Osoba",
+    "file": "main.go",
+    "unit_type": "struct",
+    "value": 0.12750050
+  },
+  {
+    "key": "main",
+    "file": "ast.go",
+    "unit_type": "func",
+    "value": 0.25500100
+  },
+  {
+    "key": "CreateOsoba",
+    "file": "ast.go",
+    "unit_type": "func",
+    "value": 0.12
+  },
+  {
+    "key": "Osoba",
+    "file": "ast.go",
+    "unit_type": "struct",
+    "value": 0.12750050
+  }
+]

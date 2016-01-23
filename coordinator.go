@@ -2,7 +2,6 @@ package inspector
 
 import (
 	"github.com/libgit2/git2go"
-	"log"
 )
 
 type Coordinator struct {
@@ -31,25 +30,25 @@ func (c *Coordinator) Heatmap() string {
 
 		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
 			if file.NewFile.Oid.IsZero() {
-//				log.Printf("FILE DELETED")
+				//				log.Printf("FILE DELETED")
 				//File deleted
 				return
 			}
 			if file.OldFile.Oid.IsZero() {
-//				log.Printf("FILE CREATED")
+				//				log.Printf("FILE CREATED")
 				//File created
 				return
 			}
 
 			//File modified
-//			blob, err := repo.LookupBlob(file.NewFile.Oid)
-//			if err != nil {
-//				panic("Cannot lookup blob, error: " + err.Error())
-//			}
-//
-//			totalBytes += len(blob.Contents())
+			//			blob, err := repo.LookupBlob(file.NewFile.Oid)
+			//			if err != nil {
+			//				panic("Cannot lookup blob, error: " + err.Error())
+			//			}
+			//
+			//			totalBytes += len(blob.Contents())
 
-//			blob.Free()
+			//			blob.Free()
 
 			//TODO:
 			//	-	Checkout at the given commit
