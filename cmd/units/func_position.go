@@ -11,7 +11,7 @@ import (
 
 const (
 	UNIT_TYPE_FUNCTION = iota
-	UNIT_TYPE_STRUCT = iota
+	UNIT_TYPE_STRUCT
 )
 
 type File struct {
