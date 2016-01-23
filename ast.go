@@ -4,45 +4,11 @@ import (
 	"go/ast"
 	"go/token"
 	"go/parser"
+	"io/ioutil"
+	"os"
+	"fmt"
 )
 
-const (
-	UNIT_TYPE_FUNCTION = iota
-	UNIT_TYPE_STRUCT
-)
-
-type File struct {
-	Path          string
-	NumberOfLines int
-	Units         []Unit
-}
-
-type Unit struct {
-	Name      string
-	LineStart int
-	LineEnd   int
-	Type      int
-}
-
-func (f *File) AddUnit(u *Unit) {
-	f.Units = append(f.Units, *u)
-}
-
-func (u *Unit) ContainsLine(line int) bool {
-	return line >= u.LineStart && line <= u.LineEnd
-}
-
-func (u *Unit) InRange(lineStart int, lineEnd int) bool {
-	return u.LineStart >= lineStart && u.LineStart <= lineEnd && u.LineEnd >= lineStart && u.LineEnd <= lineEnd
-}
-
-func (u *Unit) Intersects(lineStart int, lineEnd int) bool {
-	return (u.LineStart >= lineStart && u.LineStart <= lineEnd) || (u.LineEnd >= lineStart && u.LineEnd <= lineEnd)
-}
-
-func (u *Unit) Size() int {
-	return u.LineEnd - u.LineStart
-}
 
 // Reading files requires checking most calls for errors.
 // This helper will streamline our error checks below.
@@ -52,7 +18,7 @@ func check(e error) {
 	}
 }
 
-func parseFileContents(filePath string, contents string) File {
+func parseFileContents(filePath string, contents string) FileRevision {
 	fset := token.NewFileSet()
 
 	f, err := parser.ParseFile(fset, filePath, contents, 0)
@@ -86,7 +52,20 @@ func parseFileContents(filePath string, contents string) File {
 		return true
 	})
 
-	file := File{Path:filePath, NumberOfLines:fset.Position(f.End()).Line, Units:units}
+	file := FileRevision{NumberOfLines:fset.Position(f.End()).Line, Units:units}
 
 	return file
 }
+
+func main() {
+	dat, err := ioutil.ReadFile("cmd" + string(os.PathSeparator) + "units" + string(os.PathSeparator) + "to_parse.go")
+
+	check(err)
+
+	parsedFile := parseFileContents("to_parse.go", string(dat))
+
+	for _, unit := range parsedFile.Units {
+		fmt.Printf("Type: %d Name: %s From: %d To: %d\n", unit.Type, unit.Name, unit.LineStart, unit.LineEnd)
+	}
+}
+
