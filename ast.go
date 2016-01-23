@@ -36,6 +36,10 @@ func (u *Unit) InRange(lineStart int, lineEnd int) bool {
 	return u.LineStart >= lineStart && u.LineStart <= lineEnd && u.LineEnd >= lineStart && u.LineEnd <= lineEnd
 }
 
+func (u *Unit) Intersects(lineStart int, lineEnd int) bool {
+	return (u.LineStart >= lineStart && u.LineStart <= lineEnd) || (u.LineEnd >= lineStart && u.LineEnd <= lineEnd)
+}
+
 func (u *Unit) Size() int {
 	return u.LineEnd - u.LineStart
 }
