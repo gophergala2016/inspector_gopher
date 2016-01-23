@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const clonePath string = "/tmp/inspector-gopher/"
+
 // Snapshots collect data gathered from processing commits.
 type Snapshot struct {
 
@@ -45,15 +47,15 @@ func parse(repoName string) ([]Snapshot, error) {
 
 // Clones repo to disc, if already exists, deletes the existing files first.
 func cloneRepo(repoName string) (*git.Repository, error) {
-	if _, err := os.Stat(repoName); err == nil {
-		err = os.RemoveAll(repoName)
+	if _, err := os.Stat(clonePath + repoName); err == nil {
+		err = os.RemoveAll(clonePath + repoName)
 		if err != nil {
 			return nil, err
 		}
 		log.Println("Cleaned up repo [" + repoName + "]")
 	}
 
-	repo, err := git.Clone("git://github.com/" + repoName + ".git", repoName, &git.CloneOptions{})
+	repo, err := git.Clone("git://github.com/" + repoName + ".git", clonePath + repoName, &git.CloneOptions{})
 	if err != nil {
 		return nil, err
 	}
