@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// Path to which to clone repos to when analyzing them.
 const clonePath string = "/tmp/inspector-gopher/"
 
 // Snapshots collect data gathered from processing commits.
