@@ -1,5 +1,4 @@
 package inspector
-
 import "github.com/libgit2/git2go"
 
 type Coordinator struct {
@@ -15,15 +14,22 @@ func NewCoordinator(repo string) *Coordinator {
 func (c *Coordinator) Heatmap() string {
 	repo, _ := GetRepo(c.Repo)
 
-	//	defer repo.Free()
-	//	type CommitWalkerFunc func(previousCommit *git.Commit, currentCommit *git.Commit) bool
 
-	WalkCommits(repo, func(previous *git.Commit, current *git.Commit) bool {
+	WalkCommits(repo, func(previous, current *git.Commit) bool {
+		diff, err := GetDiff(repo, previous, current)
+		if err != nil {
+			return false
+		}
+		defer diff.Free()
+
+		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
+		})
+
 		return true
 	})
 
-	//	gitUnits := (c.repo)
-	//	astUnits := parseFileContents("/tmp/main.go")
+	defer repo.Free()
+	defer CleanTempDir()
 
 	return c.Repo
 }

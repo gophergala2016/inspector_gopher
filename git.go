@@ -6,25 +6,39 @@ import (
 	"log"
 	"os"
 	"time"
+	"io/ioutil"
 )
 
-// Repo base path.
-const clonePath string = "/tmp/inspector-gopher/"
+var tempDir string
 
-func GetRepo(repoName string) (*git.Repository, error) {
-	if _, err := os.Stat(clonePath + repoName); err == nil {
-		log.Println("Opened repo [" + repoName + "]")
-		return git.OpenRepository(clonePath + repoName)
+func getTempDir() string {
+	if tempDir == "" {
+		tempDir, _ = ioutil.TempDir("./", "repo")
 	}
 
-	defer log.Println("Cloned repo [" + repoName + "]")
-	return git.Clone("git://github.com/" + repoName + ".git", clonePath + repoName, &git.CloneOptions{})
+	return tempDir
+}
+
+func CleanTempDir() {
+	os.Remove(getTempDir())
+}
+
+func GetRepo(repoName string) (*git.Repository, error) {
+	if _, err := os.Stat(getTempDir() + string(os.PathSeparator) + repoName); err == nil {
+		log.Println("Opened repo [" + repoName + "]")
+		return git.OpenRepository(getTempDir() + string(os.PathSeparator) + repoName)
+	}
+
+	return git.Clone("git://github.com/" + repoName + ".git", getTempDir() + string(os.PathSeparator) + repoName, &git.CloneOptions{})
 }
 
 // Access commits via callback
 type CommitWalkerFunc func(previousCommit *git.Commit, currentCommit *git.Commit) bool
 
 func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
+	if repo == nil {
+		return errors.New("Supplied nil repo.")
+	}
 	walker, err := repo.Walk()
 	defer walker.Free()
 	if err != nil {
