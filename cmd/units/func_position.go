@@ -6,7 +6,6 @@ import (
 	"go/token"
 	"go/parser"
 	"os"
-	"container/list"
 	"fmt"
 )
 
@@ -15,11 +14,21 @@ const (
 	UNIT_TYPE_STRUCT = iota
 )
 
+type File struct {
+	Path         string
+	NumberOfLine int
+	Units        []Unit
+}
+
 type Unit struct {
 	Name      string
 	LineStart int
 	LineEnd   int
 	Type      int
+}
+
+func (f *File) AddUnit(u *Unit) {
+	f.Units = append(f.Units, *u)
 }
 
 func (u *Unit) ContainsLine(line int) bool {
@@ -30,6 +39,9 @@ func (u *Unit) InRange(lineStart int, lineEnd int) bool {
 	return u.LineStart >= lineStart && u.LineStart <= lineEnd && u.LineEnd >= lineStart && u.LineEnd <= lineEnd
 }
 
+func (u *Unit) Size() int {
+	return u.LineEnd - u.LineStart
+}
 
 // Reading files requires checking most calls for errors.
 // This helper will streamline our error checks below.
@@ -39,14 +51,14 @@ func check(e error) {
 	}
 }
 
-func parseFileContents(fileName string, contents string) *list.List {
+func parseFileContents(fileName string, contents string) []Unit {
 	fset := token.NewFileSet()
 
 	f, err := parser.ParseFile(fset, fileName, contents, 0)
 
 	check(err)
 
-	units := list.New()
+	units := []Unit{}
 
 	ast.Inspect(f, func(n ast.Node) bool {
 		switch x := n.(type) {
@@ -57,7 +69,7 @@ func parseFileContents(fileName string, contents string) *list.List {
 				LineEnd:fset.Position(x.Body.Rbrace).Line,
 				Type:UNIT_TYPE_FUNCTION,
 			}
-			units.PushFront(u)
+			units = append(units, u)
 		case *ast.TypeSpec:
 			if _, ok := x.Type.(*ast.StructType); ok {
 				u := Unit{
@@ -66,7 +78,7 @@ func parseFileContents(fileName string, contents string) *list.List {
 					LineEnd:fset.Position(x.End()).Line,
 					Type:UNIT_TYPE_STRUCT,
 				}
-				units.PushFront(u)
+				units = append(units, u)
 			}
 		}
 
@@ -83,8 +95,7 @@ func main() {
 
 	units := parseFileContents("to_parse.go", string(dat))
 
-	for e := units.Front(); e != nil; e = e.Next() {
-		unit := e.Value.(Unit)
+	for _, unit := range units {
 		fmt.Printf("Type: %d Name: %s From: %d To: %d\n", unit.Type, unit.Name, unit.LineStart, unit.LineEnd)
 	}
 }
