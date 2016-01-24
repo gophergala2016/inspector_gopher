@@ -1,9 +1,8 @@
 package inspector
 
 import (
-//	"github.com/libgit2/git2go"
+	"github.com/libgit2/git2go"
 	"testing"
-	"os"
 )
 
 const REPO_ENVY = "lazartravica/Envy"

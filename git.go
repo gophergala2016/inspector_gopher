@@ -6,11 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 var tempDir string
+var repoName string
 
 const tempDirLocation string = "/tmp"
 func getRepoDir(repoName string) string {
@@ -22,11 +21,12 @@ func getRepoDir(repoName string) string {
 }
 
 func CleanTempDir() {
-	os.RemoveAll(getRepoDir())
+	os.RemoveAll(getRepoDir(repoName))
 }
 
-func GetRepo(repoName string) (*git.Repository, error) {
-	if _, err := os.Stat(); err == nil {
+func GetRepo(rName string) (*git.Repository, error) {
+	repoName = rName
+	if _, err := os.Stat(getRepoDir(repoName)); err == nil {
 		log.Printf("[START] OPEN REPO %s", getRepoDir(repoName))
 		repo, err := git.OpenRepository(getRepoDir(repoName))
 		if err != nil {
