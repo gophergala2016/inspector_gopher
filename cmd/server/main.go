@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gophergala2016/inspector_gopher"
 	"flag"
+	"strconv"
 )
 
 var webRoot = flag.String("webroot", "public", "Relative or absolute path to the directory where the static servable files are stored.")
@@ -18,7 +19,19 @@ func main() {
 	http.Handle("/", fs)
 
 	fmt.Println("Starting to serve!")
-		http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/benchmark", func(w http.ResponseWriter, r *http.Request) {
+		repoUrl := r.URL.Query().Get("repo")
+		depth := r.URL.Query().Get("depth")
+
+		f, _ := strconv.ParseInt(depth, 0, 0)
+		log.Printf("repoName: %s, depth: %d", repoUrl, f)
+
+		time := inspector.HarvestBenched(repoUrl, int(f))
+
+		w.Write([]byte(fmt.Sprintf("%f", time)))
+		w.WriteHeader(200)
+	})
+	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		repoUrl := r.URL.Query().Get("repo")
 		coordinator := inspector.NewCoordinator(repoUrl)
 
