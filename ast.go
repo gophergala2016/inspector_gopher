@@ -15,14 +15,19 @@ func check(e error) {
 }
 
 // Extracts all of the functions and structures from the file
-func ParseFileContents(filePath string, contents string) FileRevision {
+func ParseFileContents(filePath string, contents string) *File {
 	fset := token.NewFileSet()
 
 	f, err := parser.ParseFile(fset, filePath, contents, 0)
 
 	check(err)
 
-	units := []Unit{}
+	file := File{
+		Path: filePath,
+		NumberOfLines: fset.Position(f.End()).Line,
+		Units: []*Unit{},
+		Commits: []*Commit{},
+	}
 
 	// We walk the syntax tree
 	ast.Inspect(f, func(n ast.Node) bool {
@@ -30,29 +35,43 @@ func ParseFileContents(filePath string, contents string) FileRevision {
 		case *ast.FuncDecl:
 			// Functions have the position of their brackets
 			u := Unit{
+				Type:      UNIT_TYPE_FUNCTION,
 				Name:      x.Name.Name,
+
 				LineStart: fset.Position(x.Body.Lbrace).Line,
 				LineEnd:   fset.Position(x.Body.Rbrace).Line,
-				Type:      UNIT_TYPE_FUNCTION,
+
+				RationSum: 0,
+				TimesChanged: 0,
+
+				Commits: []*Commit{},
+				File: &file,
 			}
-			units = append(units, u)
+			file.Units = append(file.Units, &u)
+			break
 		case *ast.TypeSpec:
 			if _, ok := x.Type.(*ast.StructType); ok {
+
 				// Structures only have the position of their beginning and their end (unfortunately no bracket positions)
 				u := Unit{
+					Type:      UNIT_TYPE_STRUCT,
 					Name:      x.Name.Name,
+
 					LineStart: fset.Position(x.Pos()).Line,
 					LineEnd:   fset.Position(x.End()).Line,
-					Type:      UNIT_TYPE_STRUCT,
+
+					RationSum: 0,
+					TimesChanged: 0,
+
+					Commits: []*Commit{},
+					File: &file,
 				}
-				units = append(units, u)
+				file.Units = append(file.Units, &u)
 			}
 		}
 
 		return true
 	})
 
-	file := FileRevision{NumberOfLines: fset.Position(f.End()).Line, Units: units}
-
-	return file
+	return &file
 }

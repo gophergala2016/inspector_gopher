@@ -4,55 +4,34 @@ import (
 	"github.com/libgit2/git2go"
 	"log"
 	"time"
+	"strings"
 )
-
-//type Contributor struct {
-//	Name string
-//	Email string
-//	Files []*File
-//	Units []*Unit
-//	Commits []*Commit
-//}
-//
-//type Commit struct {
-//	Hash string
-//	Contributor *Contributor
-//	Message string
-//	Time time.Time
-//	Files []*File
-//	Unit []*Unit
-//}
-//
-//type File struct {
-//	Path string
-//	Units []*Unit
-//	Commits []*Commit
-//}
-//
-//type Unit struct {
-//	UnitType string
-//	Name string
-//	Signature string
-//	File *File
-//}
-//
-//var files map[string]File
-//
-//func init() {
-//	files = make(map[string]File)
-//}
 
 func Harvest(repoName string) string {
 	repo, _ := GetRepo(repoName)
 	defer repo.Free()
 	defer CleanTempDir()
 
+
+	var files map[string]*File = make(map[string]*File)
+
 	count := 0
 	WalkCommits(repo, func(previousCommit *git.Commit, currentCommit *git.Commit) bool {
 		if (len(files) == 0) {
 			diff, _ := GetDiff(repo, previousCommit, nil)
 			WalkFiles(diff, func(file git.DiffDelta, process float64) {
-				log.Printf("FILE: %s", file.OldFile.Path)
+				if !strings.HasSuffix(strings.ToLower(file.OldFile.Path), ".go") {
+					return
+				}
+
+				blob, err := repo.LookupBlob(file.OldFile.Oid)
+				if err != nil {
+					return
+				}
+
+				astFile := ParseFileContents(file.OldFile.Path, string(blob.Contents()))
+
+				files[file.OldFile.Path] = astFile
 			})
 			return false
 		}
@@ -66,6 +45,10 @@ func Harvest(repoName string) string {
 
 		return true
 	})
+
+	for _, file := range files {
+		log.Println(file)
+	}
 
 	log.Println(count)
 	return "super"
