@@ -161,24 +161,31 @@ func WalkDepthCommits(repo *git.Repository, depth int, walkerFunc CommitWalkerFu
 
 	var previousCommit *git.Commit
 	commitNumber := 0
+	log.Println("[START] Getting number of commits")
 	numberOfCommits, _ := GetNumberOfCommits(repo)
+	log.Printf("[SUCCESS] Getting number of commits")
 
 	err = walker.Iterate(func(commit *git.Commit) bool {
 		if previousCommit == nil {
+			log.Println("[PROCESS] Skipped first commit")
 			previousCommit = commit
 			return true
 		}
 
 		defer func() {
+			log.Println("[PROCESS] Cleaned up commit")
 			previousCommit.Free()
 			previousCommit = commit
 			commitNumber += 1
 		}()
 
 		if (commitNumber + 1 < numberOfCommits - depth) {
+			log.Println("[PROCESS] Skipped out of depth commit")
 			return true
 		}
 
+		log.Println("[START] Execute callback")
+		defer log.Println("[SUCCESS] Execute callback")
 		return walkerFunc(previousCommit, commit)
 	})
 	if err != nil {

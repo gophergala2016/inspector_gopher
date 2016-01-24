@@ -6,8 +6,6 @@ import (
 
 const DEPTH = 100
 
-var files = make(map[string]File)
-
 type Coordinator struct {
 	RepoName string
 }
@@ -22,8 +20,6 @@ func (c *Coordinator) Heatmap() string {
 	repo, _ := GetRepo(c.RepoName)
 	defer repo.Free()
 	defer CleanTempDir()
-
-	units := []Unit{}
 
 	total := 0
 
@@ -60,7 +56,7 @@ func (c *Coordinator) Heatmap() string {
 			//	-	Run unitHunk.Intersects(*unitAst)
 			//	-	Flag if true
 
-			units = append(units, *UnitFromHunk(file.NewFile, hunk))
+//			units = append(units, *UnitFromHunk(file.NewFile, hunk))
 		})
 
 		return true

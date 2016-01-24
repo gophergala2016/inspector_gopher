@@ -1,6 +1,9 @@
 package inspector
 
-import "github.com/libgit2/git2go"
+import (
+	"time"
+	"fmt"
+)
 
 // Types of unit.
 const (
@@ -9,62 +12,46 @@ const (
 	UNIT_TYPE_HUNK
 )
 
-// File represents a single .go file and holds all revisions of itself
+// File represents a single .go file.
 type File struct {
-	Path    string
-	Changes []FileRevision
-}
-
-//func createFilesFromPaths(paths []string) (files map[string]*File) {
-//	files = make(map[string]File)
-//
-//	for _, path := range paths {
-//		files[path] = &File {Path: path, Changes: make([]FileRevision)}
-//	}
-//
-//	return files
-//}
-
-// File revision represents the files state in a single commit.
-type FileRevision struct {
+	Path          string
 	NumberOfLines int
-	Units         []Unit
+	Units         []*Unit
+	Commits       []*Commit
 }
 
 // Unit is either a function or a data structure.
 // Holds enough information for later determining
 // whether it changed or not.
 type Unit struct {
-	Name      string
-	LineStart int
-	LineEnd   int
-	Type      int
+	Type         int
+	Name         string
+
+	LineStart    int
+	LineEnd      int
+
+	RationSum    int
+	TimesChanged int
+
+	Commits      []*Commit
+	File         *File
 }
 
-func UnitFromHunk(file git.DiffFile, hunk git.DiffHunk) *Unit {
-	start := 0
-
-	if hunk.NewStart > 3 {
-		start = 3
-	}
-
-	start += hunk.NewStart
-	end := hunk.NewStart + hunk.NewLines
-
-	if file.Size - end >= 4 {
-		end -= 4
-	}
-
-	return &Unit{
-		Name:      "Hunk",
-		LineStart: start,
-		LineEnd:   end,
-		Type:      UNIT_TYPE_HUNK,
-	}
+type Commit struct {
+	Contributor *Contributor
+	Hash        string
+	Message     string
+	Time        time.Time
+	Files       []*File
+	Units       []*Unit
 }
 
-func (f *FileRevision) AddUnit(u *Unit) {
-	f.Units = append(f.Units, *u)
+type Contributor struct {
+	Name    string
+	Email   string
+	Files   []*File
+	Units   []*Unit
+	Commits []*Commit
 }
 
 func (u *Unit) ContainsLine(line int) bool {
@@ -83,4 +70,33 @@ func (u1 *Unit) Intersects(u2 *Unit) bool {
 // Number of lines that the Unit has
 func (u *Unit) Size() int {
 	return u.LineEnd - u.LineStart
+}
+
+func (f File) String() string {
+	units := "Units[\n"
+	for _, u := range f.Units {
+		units += u.String() + "\n"
+	}
+	units += "]"
+
+	return fmt.Sprintf(
+		"FILE {Path: %s, NumberOfLines: %s, Units: %s, TimesChanged: %d}",
+		f.Path,
+		f.NumberOfLines,
+		units,
+		len(f.Commits),
+	)
+}
+
+func (u Unit) String() string {
+	return fmt.Sprintf(
+		"UNIT {Type: %v, Name: %s, LineStart: %d, LineEnd: %d, RatioSum: %d, TimesChanged: %d, File: %s}",
+		u.Type,
+		u.Name,
+		u.LineStart,
+		u.LineEnd,
+		u.RationSum,
+		u.TimesChanged,
+		u.File.Path,
+	)
 }
