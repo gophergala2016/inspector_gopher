@@ -127,6 +127,59 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 	return nil
 }
 
+func WalkDepthCommits(repo *git.Repository, depth int, walkerFunc CommitWalkerFunc) error {
+	if repo == nil {
+		return errors.New("[FAIL] No repo supplied")
+	}
+
+	walker, err := repo.Walk()
+	if err != nil {
+		return err
+	}
+	defer walker.Free()
+
+	walker.Sorting(git.SortTopological | git.SortReverse)
+	err = walker.PushHead()
+	if err != nil {
+		return err
+	}
+	log.Println("[START] Walk commits")
+	defer log.Printf("[SUCCESS] Walk commits")
+
+	var previousCommit *git.Commit
+	commitNumber := 0
+	numberOfCommits, _ := GetNumberOfCommits(repo)
+
+	err = walker.Iterate(func(commit *git.Commit) bool {
+		if previousCommit == nil {
+			previousCommit = commit
+			return true
+		}
+
+		defer func() {
+			previousCommit.Free()
+			previousCommit = commit
+			commitNumber += 1
+		}()
+
+		if (commitNumber + 1 < numberOfCommits - depth) {
+			return true
+		}
+
+		return walkerFunc(previousCommit, commit)
+	})
+	if err != nil {
+		return err
+	}
+
+	if previousCommit != nil {
+		previousCommit.Free()
+	}
+
+	return nil
+}
+
+
 func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *git.Commit) (*git.Diff, error) {
 	if previousCommit == nil || currentCommit == nil {
 		return nil, errors.New("You must pass both commits to get the diff.")
