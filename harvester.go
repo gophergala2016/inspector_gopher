@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Harvest(repoName string) string {
+func Harvest(repoName string) map[string]*File {
 	repo, _ := GetRepo(repoName)
 	defer repo.Free()
 	defer CleanTempDir()
@@ -18,6 +18,7 @@ func Harvest(repoName string) string {
 	count := 0
 	WalkCommits(repo, func(previousCommit *git.Commit, currentCommit *git.Commit) bool {
 		if (len(files) == 0) {
+			//Initially populate the files map with the whole file structure at the specific commit
 			log.Printf("[START] Create base tree")
 			diff, _ := GetDiff(repo, previousCommit, nil)
 			WalkFiles(diff, func(file git.DiffDelta, process float64) {
@@ -39,35 +40,39 @@ func Harvest(repoName string) string {
 			return true
 		}
 
-		count := 0
 		diff, _ := GetDiff(repo, previousCommit, currentCommit)
-		WalkFiles(diff, func(file git.DiffDelta, process float64) {
+
+//		var commitFiles map[string]*File = make(map[string]*File)
+
+		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
 			if !strings.HasSuffix(strings.ToLower(file.OldFile.Path), ".go") {
 				return
 			}
-			count++
 
 			blob, err := repo.LookupBlob(file.OldFile.Oid)
 			if err != nil {
 				return
 			}
 
+//			var newFile *File
+//			if commitFiles[file.NewFile.Path] != nil {
+//				newFile = commitFiles[file.NewFile.Path]
+//			} else {
+//				newFile = ParseFileContents()
+//			}
+
 			astFile := ParseFileContents(file.OldFile.Path, string(blob.Contents()))
 
 			files[file.OldFile.Path] = astFile
 		})
-
-//		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
-//
-//			count += 1
-//		})
 
 		return true
 	})
 
 
 	log.Println(count)
-	return "super"
+
+	return
 }
 
 func HarvestBenched(repoName string, depth int) float64 {

@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const MAX_DEPTH = 500
+const MAX_DEPTH = 200
 
 var tempDir string
 var repoName string

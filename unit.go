@@ -12,6 +12,11 @@ const (
 	UNIT_TYPE_HUNK
 )
 
+type Everything struct {
+	Files map[string]*File
+	Commits map[string]*Commit
+}
+
 // File represents a single .go file.
 type File struct {
 	Path          string
