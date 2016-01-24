@@ -11,9 +11,11 @@ import (
 )
 
 var webRoot = flag.String("webroot", os.Getenv("GOPATH")+string(os.PathSeparator)+"src/github.com/gophergala2016/inspector_gopher/public", "Relative or absolute path to the directory where the static servable files are stored.")
-
+var repoDir = flag.String("repodir", "/tmp", "The directory in which to store cloned repositories.")
 func main() {
 	flag.Parse()
+
+	inspector.SetTempDir(*repoDir)
 
 	fs := http.FileServer(http.Dir(*webRoot))
 

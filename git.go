@@ -16,14 +16,19 @@ var tempDir string
 var repoName string
 var filesInWorkingTree []string
 
-const tempDirLocation string = "/tmp"
+var tempDirLocation string = "/tmp"
 func getRepoDir(repoName string) string {
-	return tempDirLocation + string(os.PathSeparator) + repoName
+	return tempDirLocation + string(os.PathSeparator) + repoName // Uncomment to prefix with rand.
 	if tempDir == "" {
 		tempDir, _ = ioutil.TempDir(tempDirLocation, "repo")
 	}
 
 	return tempDir + string(os.PathSeparator) + repoName
+}
+
+func SetTempDir(newLocation string) {
+	tempDirLocation = newLocation
+	log.Println("Location set to " + tempDirLocation)
 }
 
 func CleanTempDir() {
