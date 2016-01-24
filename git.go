@@ -6,12 +6,15 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 const MAX_DEPTH = 500
 
 var tempDir string
 var repoName string
+var filesInWorkingTree []string
 
 const tempDirLocation string = "/tmp"
 func getRepoDir(repoName string) string {
@@ -40,15 +43,20 @@ func GetRepo(rName string) (*git.Repository, error) {
 
 		log.Printf("[START] PULLING REPO")
 
-
-
 		log.Printf("[SUCCESS] PULLING REPO")
+
+		filesInWorkingTree, err = ListFilesInWorkingDir(repoName)
+
 		return repo, err
 	}
 
 	log.Printf("[START] CLONE REPO %s", repoName)
-	defer log.Printf("[SUCCESS] CLONE REPO %s", repoName)
-	return git.Clone("git://github.com/" + repoName + ".git", getRepoDir(repoName), &git.CloneOptions{})
+	repo, err := git.Clone("git://github.com/" + repoName + ".git", getRepoDir(repoName), &git.CloneOptions{})
+	log.Printf("[SUCCESS] CLONE REPO %s", repoName)
+
+	filesInWorkingTree, err = ListFilesInWorkingDir(repoName)
+
+	return repo, err
 }
 
 func GetNumberOfCommits(repo *git.Repository) (count int, err error) {
@@ -223,6 +231,21 @@ type HunkWalkerFunc func(file git.DiffDelta, hunk git.DiffHunk)
 
 func WalkHunks(diff *git.Diff, walker HunkWalkerFunc) error {
 	err := diff.ForEach(func(file git.DiffDelta, process float64) (git.DiffForEachHunkCallback, error) {
+
+		// Check if the file is in the master HEAD master.
+		found := false
+		for _, fileInWorkingTree := range filesInWorkingTree {
+			if file.NewFile.Path == fileInWorkingTree {
+				found = true
+				break;
+			}
+		}
+
+		// If the file is not found, we don't want to analyze it.
+		if !found {
+			return nil, nil
+		}
+
 		return func(hunk git.DiffHunk) (git.DiffForEachLineCallback, error) {
 			walker(file, hunk)
 			return nil, nil
@@ -230,4 +253,32 @@ func WalkHunks(diff *git.Diff, walker HunkWalkerFunc) error {
 	}, git.DiffDetailHunks)
 
 	return err
+}
+
+func ListFilesInWorkingDir(repoName string) (files []string, err error) {
+
+	walkFn := func(path string, info os.FileInfo, err error) error {
+		stat, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if stat.Name() == ".git" {
+			return filepath.SkipDir
+		} else if !stat.IsDir() {
+			files = append(files, strings.Replace(path, getRepoDir(repoName) + "/", "", 1))
+		}
+
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err = filepath.Walk(getRepoDir(repoName), walkFn)
+	if err != nil {
+		return files, err
+	}
+
+	return files, nil
 }

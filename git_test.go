@@ -1,7 +1,6 @@
 package inspector
 
 import (
-//	"github.com/libgit2/git2go"
 	"testing"
 	"github.com/libgit2/git2go"
 )
@@ -11,6 +10,7 @@ const REPO_HEXY = "lazartravica/Hexy"
 const REPO_GIT2GO = "libgit2/git2go"
 const REPO_MUX = "gorilla/mux"
 const REPO_CONSUL = "hashicorp/consul"
+const REPO_DOCKER = "docker/docker"
 
 func TestGetRepo(t *testing.T) {
 	repo, err := GetRepo(REPO_ENVY)
@@ -77,11 +77,13 @@ func TestGetDiff(t *testing.T) {
 }
 
 func TestWalkHunks(t *testing.T) {
-	repo, err := GetRepo(REPO_ENVY)
+	repo, err := GetRepo(REPO_DOCKER)
 	if err != nil {
 		t.Error(err)
 	}
+
 	defer repo.Free()
+	defer CleanTempDir()
 
 	WalkCommits(repo, func(previous, current *git.Commit) bool {
 		diff, err := GetDiff(repo, previous, current)
@@ -92,10 +94,21 @@ func TestWalkHunks(t *testing.T) {
 		defer diff.Free()
 
 		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
+//			time.Sleep(time.Millisecond)
 		})
 
 		return true
 	})
+}
 
+func TestListFiles(t *testing.T) {
+	repo, err := GetRepo(REPO_DOCKER)
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer repo.Free()
 	defer CleanTempDir()
+
+	ListFilesInWorkingDir(REPO_DOCKER)
 }
