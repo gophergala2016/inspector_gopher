@@ -135,38 +135,6 @@ func WalkHunks(diff *git.Diff, walker HunkWalkerFunc) error {
 	return err
 }
 
-func ListFiles(repoPath string) []string {
-	files := []string{}
-
-	walkFn := func(path string, info os.FileInfo, err error) error {
-		stat, err := os.Stat(path)
-		if err != nil {
-			return err
-		}
-
-		if stat.Name() == ".git" {
-			return filepath.SkipDir
-		} else if !stat.IsDir() {
-			files = append(files, strings.Replace(path, repoPath, "", 1))
-		}
-
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-	err := filepath.Walk(repoPath, walkFn)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, val := range files {
-		log.Println(val)
-	}
-
-	return files
-}
-
 func Pull(repo *git.Repository) error {
 	// Get the name
 	name := "master"
