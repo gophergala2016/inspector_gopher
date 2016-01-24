@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+const MAX_DEPTH = 200
+
 var tempDir string
 var repoName string
 
@@ -54,6 +56,12 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 	if repo == nil {
 		return errors.New("[FAIL] No repo supplied")
 	}
+
+//	head, _ := repo.Head()
+//	commit, _ := repo.LookupTree(head.Target())
+//
+//	log.Println(tree.EntryCount())
+
 	walker, err := repo.Walk()
 	if err != nil {
 		return err

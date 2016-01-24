@@ -1,9 +1,9 @@
 package main
 import (
-"github.com/gophergala2016/inspector_gopher"
-"github.com/libgit2/git2go"
 	"log"
+	"github.com/gophergala2016/inspector_gopher"
 	"os"
+"github.com/libgit2/git2go"
 )
 
 func main() {
