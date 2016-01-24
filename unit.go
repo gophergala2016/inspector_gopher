@@ -35,7 +35,7 @@ type Unit struct {
 	LineStart    int
 	LineEnd      int
 
-	RationSum    int
+	RatioSum     int
 	TimesChanged int
 
 	Commits      []*Commit
@@ -100,7 +100,7 @@ func (u Unit) String() string {
 		u.Name,
 		u.LineStart,
 		u.LineEnd,
-		u.RationSum,
+		u.RatioSum,
 		u.TimesChanged,
 		u.File.Path,
 	)

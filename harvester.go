@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Harvest(repoName string) map[string]*File {
+func Harvest(repoName string) *Everything {
 	repo, _ := GetRepo(repoName)
 	defer repo.Free()
 	defer CleanTempDir()
