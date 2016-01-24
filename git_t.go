@@ -1,11 +1,13 @@
 package inspector
 
 import (
-	"github.com/libgit2/git2go"
+//	"github.com/libgit2/git2go"
 	"testing"
+	"github.com/libgit2/git2go"
 )
 
 const REPO_ENVY = "lazartravica/Envy"
+const REPO_HEXY = "lazartravica/Hexy"
 const REPO_GIT2GO = "libgit2/git2go"
 const REPO_MUX = "gorilla/mux"
 const REPO_CONSUL = "hashicorp/consul"
@@ -18,6 +20,25 @@ func TestGetRepo(t *testing.T) {
 	defer repo.Free()
 
 	defer CleanTempDir()
+}
+
+func TestNumberOfCommits(t *testing.T) {
+	repo, err := GetRepo(REPO_HEXY)
+	if err != nil {
+		t.Error(err)
+	}
+
+	defer repo.Free()
+	defer CleanTempDir()
+
+	numberOfCommits, err :=GetNumberOfCommits(repo)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if numberOfCommits != 41 {
+		t.Errorf("Number of commits is not 41, got: %d", numberOfCommits)
+	}
 }
 
 func TestRepoWalking(t *testing.T) {

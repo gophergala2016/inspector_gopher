@@ -2,6 +2,7 @@ package inspector
 
 import (
 	"github.com/libgit2/git2go"
+	"log"
 )
 
 func Harvest(repoName string) string {
@@ -14,11 +15,12 @@ func Harvest(repoName string) string {
 		diff, _ := GetDiff(repo, previousCommit, currentCommit)
 
 		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
-			count++
+			count += 1
 		})
 
 		return true
 	})
 
+	log.Println(count)
 	return "super"
 }

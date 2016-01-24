@@ -8,13 +8,14 @@ import (
 	"os"
 )
 
-const MAX_DEPTH = 200
+const MAX_DEPTH = 500
 
 var tempDir string
 var repoName string
 
 const tempDirLocation string = "/tmp"
 func getRepoDir(repoName string) string {
+	return tempDirLocation + string(os.PathSeparator) + repoName
 	if tempDir == "" {
 		tempDir, _ = ioutil.TempDir(tempDirLocation, "repo")
 	}
@@ -23,7 +24,7 @@ func getRepoDir(repoName string) string {
 }
 
 func CleanTempDir() {
-	os.RemoveAll(getRepoDir(repoName))
+//	os.RemoveAll(getRepoDir(repoName))
 }
 
 func GetRepo(rName string) (*git.Repository, error) {
@@ -31,6 +32,7 @@ func GetRepo(rName string) (*git.Repository, error) {
 	if _, err := os.Stat(getRepoDir(repoName)); err == nil {
 		log.Printf("[START] OPEN REPO %s", getRepoDir(repoName))
 		repo, err := git.OpenRepository(getRepoDir(repoName))
+
 		if err != nil {
 			return repo, err
 		}
@@ -49,6 +51,27 @@ func GetRepo(rName string) (*git.Repository, error) {
 	return git.Clone("git://github.com/" + repoName + ".git", getRepoDir(repoName), &git.CloneOptions{})
 }
 
+func GetNumberOfCommits(repo *git.Repository) (count int, err error) {
+
+	walker, err := repo.Walk()
+	if err != nil {
+		return 0, err
+	}
+	defer walker.Free()
+
+	err = walker.PushHead()
+	if err != nil {
+		return 0, err
+	}
+
+	err = walker.Iterate(func(commit *git.Commit) bool {
+		count++
+		return true
+	})
+
+	return count, err
+}
+
 // Access commits via callback
 type CommitWalkerFunc func(previousCommit *git.Commit, currentCommit *git.Commit) bool
 
@@ -56,11 +79,6 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 	if repo == nil {
 		return errors.New("[FAIL] No repo supplied")
 	}
-
-//	head, _ := repo.Head()
-//	commit, _ := repo.LookupTree(head.Target())
-//
-//	log.Println(tree.EntryCount())
 
 	walker, err := repo.Walk()
 	if err != nil {
@@ -77,6 +95,8 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 	defer log.Printf("[SUCCESS] Walk commits")
 
 	var previousCommit *git.Commit
+	commitNumber := 0
+	numberOfCommits, _ := GetNumberOfCommits(repo)
 
 	err = walker.Iterate(func(commit *git.Commit) bool {
 		if previousCommit == nil {
@@ -84,13 +104,17 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 			return true
 		}
 
-		walkForward := walkerFunc(previousCommit, commit)
+		defer func() {
+			previousCommit.Free()
+			previousCommit = commit
+			commitNumber += 1
+		}()
 
-		previousCommit.Free()
+		if (commitNumber + 1 < numberOfCommits - MAX_DEPTH) {
+			return true
+		}
 
-		previousCommit = commit
-
-		return walkForward
+		return walkerFunc(previousCommit, commit)
 	})
 	if err != nil {
 		return err
