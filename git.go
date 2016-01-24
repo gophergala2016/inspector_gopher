@@ -280,7 +280,7 @@ func Pull(repo *git.Repository) error {
 		}
 
 	} else {
-		return "Unexpected merge analysis result"
+		return errors.New("Unexpected merge analysis result")
 	}
 
 	return nil
