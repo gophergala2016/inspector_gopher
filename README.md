@@ -21,4 +21,4 @@ Our volatility estimation algorithm was inspired by [TF-IDF](http://www.tfidf.co
 
 By looking at this metric, we can plot a Tree view graph that shows contributors which part of code is having the most relevant changes in the recent history.
 
-![GUFER INSPEKTOR](https://raw.githubusercontent.com/gophergala2016/inspector_gopher/master/public/treemap.png)
+![Tree Map](https://raw.githubusercontent.com/gophergala2016/inspector_gopher/master/public/treemap.png)
