@@ -12,37 +12,39 @@ import (
 
 var tempDir string
 
-func getTempDir() string {
-	return "/tmp"
+const tempDirLocation string = "/tmp"
+func getRepoDir(repoName string) string {
 	if tempDir == "" {
-		tempDir, _ = ioutil.TempDir("./", "repo")
+		tempDir, _ = ioutil.TempDir(tempDirLocation, "repo")
 	}
 
-	return tempDir
+	return tempDir + string(os.PathSeparator) + repoName
 }
 
 func CleanTempDir() {
-	os.RemoveAll(getTempDir())
+	os.RemoveAll(getRepoDir())
 }
 
 func GetRepo(repoName string) (*git.Repository, error) {
-	if _, err := os.Stat(getTempDir() + string(os.PathSeparator) + repoName); err == nil {
-		log.Printf("[START] OPEN REPO %s", repoName)
-		repo, err := git.OpenRepository(getTempDir() + string(os.PathSeparator) + repoName)
+	if _, err := os.Stat(); err == nil {
+		log.Printf("[START] OPEN REPO %s", getRepoDir(repoName))
+		repo, err := git.OpenRepository(getRepoDir(repoName))
 		if err != nil {
 			return repo, err
 		}
 		log.Printf("[SUCCESS] OPEN REPO %s", repoName)
 
 		log.Printf("[START] PULLING REPO")
-//		err = Pull(repo)
+
+
+
 		log.Printf("[SUCCESS] PULLING REPO")
 		return repo, err
 	}
 
 	log.Printf("[START] CLONE REPO %s", repoName)
 	defer log.Printf("[SUCCESS] CLONE REPO %s", repoName)
-	return git.Clone("git://github.com/" + repoName + ".git", getTempDir() + string(os.PathSeparator) + repoName, &git.CloneOptions{})
+	return git.Clone("git://github.com/" + repoName + ".git", getRepoDir(repoName), &git.CloneOptions{})
 }
 
 // Access commits via callback
