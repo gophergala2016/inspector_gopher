@@ -104,7 +104,7 @@ function main(o, data) {
             ? d.value = d.values.reduce(function (p, v) {
             return p + accumulate(v);
         }, 0)
-            : d.size;
+            : d.value;
     }
 
     // Compute the treemap layout recursively such that each group of siblings
