@@ -1,6 +1,5 @@
 # Inspector Gopher
 <img src="https://raw.githubusercontent.com/gophergala2016/inspector_gopher/master/public/inspector_gufer.png" align="right"/>
-<p align="right">Reporting for duty</p>
 
 ### Google Trends for your repo
 
