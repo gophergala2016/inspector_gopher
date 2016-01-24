@@ -1,15 +1,16 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"flag"
 	"fmt"
 	"github.com/gophergala2016/inspector_gopher"
-	"flag"
+	"log"
+	"net/http"
+	"os"
 	"strconv"
 )
 
-var webRoot = flag.String("webroot", "public", "Relative or absolute path to the directory where the static servable files are stored.")
+var webRoot = flag.String("webroot", os.Getenv("GOPATH")+string(os.PathSeparator)+"src/github.com/gophergala2016/inspector_gopher/public", "Relative or absolute path to the directory where the static servable files are stored.")
 
 func main() {
 	flag.Parse()
