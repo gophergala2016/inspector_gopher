@@ -1,5 +1,5 @@
 # Inspector Gopher
-<img src="https://raw.githubusercontent.com/gophergala2016/inspector_gopher/master/public/inspector_gufer.png" align="right"/>
+<img src="https://raw.githubusercontent.com/gophergala2016/inspector_gopher/master/public/inspector_gufer_ready.png" align="right"/>
 
 ### Google Trends for your repo
 
