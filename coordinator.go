@@ -4,6 +4,10 @@ import (
 	"github.com/libgit2/git2go"
 )
 
+const DEPTH = 100
+
+var files = make(map[string]File)
+
 type Coordinator struct {
 	RepoName string
 }
@@ -21,7 +25,17 @@ func (c *Coordinator) Heatmap() string {
 
 	units := []Unit{}
 
+	total := 0
+
+//	files := createFilesFromPaths(ListFiles(repo.Path()))
+
 	WalkCommits(repo, func(previous, current *git.Commit) bool {
+		if total >= DEPTH {
+			return false
+		} else {
+			total += 1
+		}
+
 		diff, err := GetDiff(repo, previous, current)
 		if err != nil {
 			return false
@@ -29,16 +43,6 @@ func (c *Coordinator) Heatmap() string {
 		defer diff.Free()
 
 		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
-			if file.NewFile.Oid.IsZero() {
-				//				log.Printf("FILE DELETED")
-				//File deleted
-				return
-			}
-			if file.OldFile.Oid.IsZero() {
-				//				log.Printf("FILE CREATED")
-				//File created
-				return
-			}
 
 			//File modified
 			//			blob, err := repo.LookupBlob(file.NewFile.Oid)

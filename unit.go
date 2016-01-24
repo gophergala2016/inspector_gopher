@@ -15,6 +15,16 @@ type File struct {
 	Changes []FileRevision
 }
 
+//func createFilesFromPaths(paths []string) (files map[string]*File) {
+//	files = make(map[string]File)
+//
+//	for _, path := range paths {
+//		files[path] = &File {Path: path, Changes: make([]FileRevision)}
+//	}
+//
+//	return files
+//}
+
 // File revision represents the files state in a single commit.
 type FileRevision struct {
 	NumberOfLines int

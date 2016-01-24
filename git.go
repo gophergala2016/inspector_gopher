@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"time"
+	"path/filepath"
+	"strings"
 )
 
 var tempDir string
 
 func getTempDir() string {
+	return "/tmp"
 	if tempDir == "" {
 		tempDir, _ = ioutil.TempDir("./", "repo")
 	}
@@ -25,10 +27,21 @@ func CleanTempDir() {
 
 func GetRepo(repoName string) (*git.Repository, error) {
 	if _, err := os.Stat(getTempDir() + string(os.PathSeparator) + repoName); err == nil {
-		log.Println("Opened repo [" + repoName + "]")
-		return git.OpenRepository(getTempDir() + string(os.PathSeparator) + repoName)
+		log.Printf("[START] OPEN REPO %s", repoName)
+		repo, err := git.OpenRepository(getTempDir() + string(os.PathSeparator) + repoName)
+		if err != nil {
+			return repo, err
+		}
+		log.Printf("[SUCCESS] OPEN REPO %s", repoName)
+
+		log.Printf("[START] PULLING REPO")
+//		err = Pull(repo)
+		log.Printf("[SUCCESS] PULLING REPO")
+		return repo, err
 	}
 
+	log.Printf("[START] CLONE REPO %s", repoName)
+	defer log.Printf("[SUCCESS] CLONE REPO %s", repoName)
 	return git.Clone("git://github.com/" + repoName + ".git", getTempDir() + string(os.PathSeparator) + repoName, &git.CloneOptions{})
 }
 
@@ -37,22 +50,21 @@ type CommitWalkerFunc func(previousCommit *git.Commit, currentCommit *git.Commit
 
 func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 	if repo == nil {
-		return errors.New("Supplied nil repo.")
+		return errors.New("[FAIL] No repo supplied")
 	}
 	walker, err := repo.Walk()
-	defer walker.Free()
 	if err != nil {
 		return err
 	}
+	defer walker.Free()
 
 	walker.Sorting(git.SortTopological | git.SortReverse)
 	err = walker.PushHead()
 	if err != nil {
 		return err
 	}
-	log.Println("Started Processing repo")
-
-	start := time.Now() // Log time passed for processing.
+	log.Println("[START] Walk commits")
+	defer log.Printf("[SUCCESS] Walk commits")
 
 	var previousCommit *git.Commit
 
@@ -77,8 +89,6 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 	if previousCommit != nil {
 		previousCommit.Free()
 	}
-
-	log.Printf("[SUCCESS] duration %d seconds.", time.Now().Unix() - start.Unix())
 
 	return nil
 }
@@ -105,6 +115,8 @@ func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *gi
 		return nil, err
 	}
 
+	options.ContextLines = uint32(0)
+
 	return repo.DiffTreeToTree(previousTree, currentTree, &options)
 }
 
@@ -119,4 +131,157 @@ func WalkHunks(diff *git.Diff, walker HunkWalkerFunc) error {
 	}, git.DiffDetailHunks)
 
 	return err
+}
+
+func ListFiles(repoPath string) []string {
+	files := []string{}
+
+	walkFn := func(path string, info os.FileInfo, err error) error {
+		stat, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		if stat.Name() == ".git" {
+			return filepath.SkipDir
+		} else if !stat.IsDir() {
+			files = append(files, strings.Replace(path, repoPath, "", 1))
+		}
+
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	err := filepath.Walk(repoPath, walkFn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, val := range files {
+		log.Println(val)
+	}
+
+	return files
+}
+
+func Pull(repo *git.Repository) error {
+	// Get the name
+	name := "master"
+
+	// Locate remote
+	remote, err := repo.Remotes.Lookup("origin")
+	if err != nil {
+		return err
+	}
+
+	// Fetch changes from remote
+	if err := remote.Fetch([]string{}, nil, ""); err != nil {
+		return err
+	}
+
+	// Get remote master
+	remoteBranch, err := repo.References.Lookup("refs/remotes/origin/"+name)
+	if err != nil {
+		return err
+	}
+
+	remoteBranchID := remoteBranch.Target()
+	// Get annotated commit
+	annotatedCommit, err := repo.AnnotatedCommitFromRef(remoteBranch)
+	if err != nil {
+		return err
+	}
+
+	// Do the merge analysis
+	mergeHeads := make([]*git.AnnotatedCommit, 1)
+	mergeHeads[0] = annotatedCommit
+	analysis, _, err := repo.MergeAnalysis(mergeHeads)
+	if err != nil {
+		return err
+	}
+
+	// Get repo head
+	head, err := repo.Head()
+	if err != nil {
+		return err
+	}
+
+	if analysis & git.MergeAnalysisUpToDate != 0 {
+		return nil
+	}  else if analysis & git.MergeAnalysisNormal != 0 {
+		// Just merge changes
+		if err := repo.Merge([]*git.AnnotatedCommit{annotatedCommit}, nil, nil); err != nil {
+			return err
+		}
+		// Check for conflicts
+		index, err := repo.Index()
+		if err != nil {
+			return err
+		}
+
+		if index.HasConflicts() {
+			return errors.New("Conflicts encountered. Please resolve them.")
+		}
+
+		// Make the merge commit
+		sig, err := repo.DefaultSignature()
+		if err != nil {
+			return err
+		}
+
+		// Get Write Tree
+		treeId, err := index.WriteTree()
+		if err != nil {
+			return err
+		}
+
+		tree, err := repo.LookupTree(treeId)
+		if err != nil {
+			return err
+		}
+
+		localCommit, err := repo.LookupCommit(head.Target())
+		if err != nil {
+			return err
+		}
+
+		remoteCommit, err := repo.LookupCommit(remoteBranchID)
+		if err != nil {
+			return err
+		}
+
+		repo.CreateCommit("HEAD", sig, sig, "", tree, localCommit, remoteCommit)
+
+		// Clean up
+		repo.StateCleanup()
+	} else if analysis & git.MergeAnalysisFastForward != 0 {
+		// Fast-forward changes
+		// Get remote tree
+		remoteTree, err := repo.LookupTree(remoteBranchID)
+		if err != nil {
+			return err
+		}
+
+		// Checkout
+		if err := repo.CheckoutTree(remoteTree, nil); err != nil {
+			return err
+		}
+
+		branchRef, err := repo.References.Lookup("refs/heads/"+name)
+		if err != nil {
+			return err
+		}
+
+		// Point branch to the object
+		branchRef.SetTarget(remoteBranchID, "")
+		if _, err := head.SetTarget(remoteBranchID, ""); err != nil {
+			return err
+		}
+
+	} else {
+		return "Unexpected merge analysis result"
+	}
+
+	return nil
 }
