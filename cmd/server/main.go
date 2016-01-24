@@ -12,6 +12,8 @@ import (
 
 var webRoot = flag.String("webroot", os.Getenv("GOPATH")+string(os.PathSeparator)+"src/github.com/gophergala2016/inspector_gopher/public", "Relative or absolute path to the directory where the static servable files are stored.")
 var repoDir = flag.String("repodir", "/tmp", "The directory in which to store cloned repositories.")
+var port = flag.String("port", "8080", "The port on which the web server should listen on.")
+
 func main() {
 	flag.Parse()
 
@@ -41,6 +43,6 @@ func main() {
 		fmt.Fprintf(w, "%q", coordinator.Heatmap())
 	})
 
-	log.Println("Listening...")
-	http.ListenAndServe(":8080", nil)
+	log.Println("Listening on 0.0.0.0:" + *port)
+	http.ListenAndServe(":" + *port, nil)
 }
