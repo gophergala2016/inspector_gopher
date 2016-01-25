@@ -4,6 +4,9 @@ import (
 	"math"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"log"
+	"time"
 )
 
 type block struct {
@@ -38,19 +41,29 @@ func AnalyzeRepo(repoName string) (returnBlocks []block) {
 
 		totalNumberOfCommits := len(file.Commits)
 
-		if totalNumberOfCommits == 0 { totalNumberOfCommits = 1}
-
 		for _, unit := range file.Units {
 
 			numberOfCommits := len(unit.Commits)
 
-			if numberOfCommits == 0 { numberOfCommits = 1}
+			//BULLSHIT START
+			rand.Seed(time.Now().UTC().UnixNano())
+
+			numberOfCommits = rand.Intn(100) + 1
+			totalNumberOfCommits = rand.Intn(30) + numberOfCommits
+			//BULLSHIT END
+
+			log.Println("-----")
+			log.Printf("%d", totalNumberOfCommits)
+			log.Printf("%d", numberOfCommits)
+			log.Printf("%f", unit.RatioSum / float64(numberOfCommits))
+			log.Printf("%f", float64(totalNumberOfCommits) / float64(numberOfCommits))
+			log.Printf("%f", math.Log(float64(totalNumberOfCommits / numberOfCommits)))
 
 			returnBlocks = append(returnBlocks, block{
 				key: unit.Name,
 				file: file.Path,
 				unit_type: unit.Type,
-				value: (unit.RatioSum / float64(numberOfCommits)) * math.Log(float64(totalNumberOfCommits / numberOfCommits)),
+				value: (unit.RatioSum / float64(numberOfCommits)) * math.Log(float64(totalNumberOfCommits) / float64(numberOfCommits)),
 				size: unit.Size(),
 			})
 		}
