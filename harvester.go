@@ -72,7 +72,7 @@ func Harvest(repoName string) *Everything {
 
 	log.Println(count)
 
-	return
+	return &Everything{}
 }
 
 func HarvestBenched(repoName string, depth int) float64 {

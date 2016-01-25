@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"encoding/json"
 )
 
 var webRoot = flag.String("webroot", os.Getenv("GOPATH")+string(os.PathSeparator)+"src/github.com/gophergala2016/inspector_gopher/public", "Relative or absolute path to the directory where the static servable files are stored.")
@@ -22,6 +23,24 @@ func main() {
 	fs := http.FileServer(http.Dir(*webRoot))
 
 	http.Handle("/", fs)
+
+	http.HandleFunc("/analyze", func(w http.ResponseWriter, r *http.Request) {
+		repoName := r.URL.Query().Get("repo")
+
+		blocks := inspector.AnalyzeRepo(repoName)
+
+		log.Printf("%v", blocks)
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusOK)
+
+		retJson, _ := json.Marshal(blocks)
+
+		log.Println(string(retJson))
+		if err := json.NewEncoder(w).Encode(blocks); err != nil {
+			panic(err)
+		}
+	})
 
 	fmt.Println("Starting to serve!")
 	http.HandleFunc("/benchmark", func(w http.ResponseWriter, r *http.Request) {

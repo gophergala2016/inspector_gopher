@@ -35,7 +35,7 @@ type Unit struct {
 	LineStart    int
 	LineEnd      int
 
-	RatioSum     int
+	RatioSum     float64
 	TimesChanged int
 
 	Commits      []*Commit
