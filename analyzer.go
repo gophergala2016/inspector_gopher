@@ -34,17 +34,18 @@ func AnalyzeRepo(repoName string) (returnBlocks []block) {
 
 
 	if everything == nil {
+		log.Println("YOURE DONE M8:w")
 		return returnBlocks
 	}
 
 
-	log.Printf("%v", everything)
 	//	absoluteTotalNumberOfCommits := len(everything.Commits)
 
 	totalNumberOfCommits := len(everything.Commits)
 	for _, file := range everything.Files {
 
 
+		log.Println("LOGGING FILES")
 		for _, unit := range file.Units {
 
 			numberOfCommits := unit.TimesChanged
