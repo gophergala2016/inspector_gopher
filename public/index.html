@@ -65,7 +65,7 @@
                 <form ng-class="{'fade':loading || pageIndex !== 1}" ng-submit="search()">
                     <div class="search-container">
                         <span class="search-prefix">https://github.com/</span>
-                        <input class="search-input" type="text" value="" autofocus placeholder="docker/docker"/>
+                        <input class="search-input" type="text" ng-model="query" autofocus placeholder="docker/docker"/>
                     </div>
                 </form>
                 <div class="footer"></div>
@@ -74,50 +74,39 @@
             <section class="st-panel st-color" id="st-panel-2">
                 <div id="chart"></div>
                 <div id="repo-text">
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores et explicabo facilis id
-                        libero magni non repudiandae. A debitis deleniti eaque est expedita fugiat, ipsa itaque mollitia
-                        odit qui ratione repudiandae sed voluptates? Accusamus, accusantium alias aliquid animi
-                        blanditiis deleniti dignissimos enim inventore laborum minus nam, nulla odio omnis pariatur,
-                        placeat quibusdam quo repudiandae tempora tenetur totam. Animi dolorem ipsa maiores
-                        necessitatibus perspiciatis quis tempore. Accusamus aliquid aperiam architecto beatae blanditiis
-                        deleniti, dolore ea error esse facilis fuga incidunt labore libero modi molestias, nemo neque
-                        nesciunt nihil obcaecati optio possimus quasi quo, recusandae reiciendis repellendus similique
-                        sit ullam vero vitae voluptatem. Aperiam aspernatur blanditiis consequuntur culpa doloremque
-                        excepturi id obcaecati quisquam sapiente vitae. Accusantium debitis dignissimos doloremque illum
-                        iste iure laboriosam magnam minima, molestias necessitatibus neque nulla officia perferendis
-                        possimus quasi quod quos rerum saepe sequi totam. Ab autem fuga illum minima odit veritatis,
-                        voluptas? Adipisci autem commodi doloribus ducimus eius enim error excepturi in magni
-                        necessitatibus, nobis non obcaecati quae quidem quisquam ratione sequi soluta ut. Aliquam animi
-                        atque dolor est fugit illum iusto laudantium libero magni minima, minus nobis pariatur porro
-                        quas quasi reiciendis, repudiandae sed soluta ullam unde veritatis voluptas voluptatum?
-                        Accusamus cupiditate odio placeat quo tempore! Cum, doloremque, neque. Accusamus adipisci
-                        aliquam amet assumenda at consectetur corporis cum deserunt dignissimos eveniet fugiat in
-                        incidunt iste laboriosam molestias nihil odio perferendis possimus praesentium, provident quae
-                        quos repudiandae rerum saepe veniam vero vitae, voluptatibus? Cumque et eum expedita ipsum iure
-                        nostrum praesentium sapiente voluptatem voluptatibus! Beatae consectetur dicta dolore doloremque
-                        eligendi eos ex exercitationem facere harum, inventore ipsum iure magni modi natus nesciunt
-                        officiis omnis perferendis perspiciatis possimus praesentium quas quasi recusandae reiciendis
-                        repellendus sit tenetur voluptas voluptate. Aliquam, amet architecto delectus deserunt est hic
-                        illo ipsam ipsum maxime praesentium quasi, qui quia reiciendis rem soluta tenetur veritatis
-                        voluptatibus. Accusamus asperiores, aut, commodi, eius enim error exercitationem fugiat illo
-                        ipsum necessitatibus nulla odio praesentium quia ullam voluptatem? Asperiores beatae dolor
-                        nesciunt odit, porro sapiente sequi. Aliquid cupiditate distinctio earum eligendi exercitationem
-                        ipsum laboriosam minus modi obcaecati odit officiis pariatur possimus quae saepe sed, sint
-                        totam. Animi architecto autem cum dolores earum explicabo fuga, id, maxime modi nulla, possimus
-                        ut. A, accusamus accusantium cumque dignissimos dolorem dolores ea eos impedit itaque libero,
-                        minima officiis porro ratione reiciendis sequi suscipit totam unde? A ab accusantium amet
-                        architecto beatae consectetur corporis cumque deserunt dolorem eius esse fugiat hic, id incidunt
-                        itaque laboriosam laudantium, libero magni mollitia, necessitatibus neque nisi nulla numquam
-                        quasi quibusdam ratione recusandae saepe sint sunt voluptatem. Amet asperiores beatae cumque
-                        doloremque ea eaque exercitationem fugiat magni, maiores maxime molestiae mollitia nemo nisi non
-                        numquam perspiciatis porro, quod repellat rerum tempore? A eos eum exercitationem facere
-                        impedit, quam soluta! Ab adipisci cupiditate, earum enim eos, et ex facilis minus nemo pariatur
-                        sit suscipit tempore temporibus. Aperiam consequuntur error et facilis fugit iusto officia,
-                        perferendis placeat quibusdam rerum sapiente vel. Aspernatur dolores laudantium nisi nostrum
-                        perspiciatis veritatis vero voluptatem. Amet consequatur deserunt dicta eos minima officia porro
-                        quasi vitae voluptas?
-                    </p>
+                    <div class="row">
+                        <div class="col-sm-4 repo-column" id="left-column">
+                            <p class="column-header">
+                                Most changed files
+                            </p>
+                            <ul class="list-group">
+                                <li ng-repeat="file in data.files" class="list-group-item">
+                                    {{ file }}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-sm-4 repo-column" id="middle-column">
+                            <p class="column-header">
+                                Latest commits
+                            </p>
+                            <ul class="list-group">
+                                <li ng-repeat="commit in data.commits" class="list-group-item">
+                                    {{ commit }}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-sm-4 repo-column" id="right-column">
+                            <p class="column-header">
+                                Stats
+                            </p>
+                            <ul class="list-group">
+                                <li ng-repeat="stat in data.stats" class="list-group-item">
+                                    {{ stat }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 </div>
             </section>
 
