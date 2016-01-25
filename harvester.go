@@ -115,6 +115,7 @@ func Harvest(repoName string) *Everything {
 			}
 
 			for _, unit := range newFile.Units {
+				unit.RatioSum += 0.5
 				unit.TimesChanged++
 				if unit.IntersectsInt(hunk.NewStart, hunk.NewStart + hunk.NewLines) {
 					magicNumber := unit.numberOfLinesIntersected(hunk.NewStart, hunk.NewStart + hunk.NewLines) * len(commits)
@@ -135,7 +136,7 @@ func Harvest(repoName string) *Everything {
 						for _, u := range files[newFile.Path].Units {
 							if u.Type == unit.Type && u.Name == unit.Name {
 								unit.TimesChanged = u.TimesChanged
-								unit.RatioSum = u.RatioSum
+								unit.RatioSum += u.RatioSum
 							}
 						}
 					}
