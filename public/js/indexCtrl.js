@@ -56,7 +56,7 @@ myApp.controller('IndexCtrl', ['$scope', '$interval', '$timeout', function ($sco
                 $scope.pageIndex = 2;
 
                 $scope.data.files = _.map(data, function (d) {
-                    return {key: d.key, value: d.value};
+                    return {key: d.key, value: d.value, id: Math.random()};
                 });
 
                 //$scope.data.commits = [
