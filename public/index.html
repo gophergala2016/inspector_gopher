@@ -75,33 +75,14 @@
                 <div id="chart"></div>
                 <div id="repo-text">
                     <div class="row">
-                        <div class="col-sm-4 repo-column" id="left-column">
+                        <div class="col-sm-12 repo-column" id="left-column">
                             <p class="column-header">
                                 Most changed files
                             </p>
                             <ul class="list-group">
-                                <li ng-repeat="file in data.files" class="list-group-item">
-                                    {{ file }}
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-sm-4 repo-column" id="middle-column">
-                            <p class="column-header">
-                                Latest commits
-                            </p>
-                            <ul class="list-group">
-                                <li ng-repeat="commit in data.commits" class="list-group-item">
-                                    {{ commit }}
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="col-sm-4 repo-column" id="right-column">
-                            <p class="column-header">
-                                Stats
-                            </p>
-                            <ul class="list-group">
-                                <li ng-repeat="stat in data.stats" class="list-group-item">
-                                    {{ stat }}
+                                <li ng-repeat="file in data.files | orderBy:'-value' as filtered track by file.id "
+                                    class="list-group-item">
+                                    {{ file.key }}
                                 </li>
                             </ul>
                         </div>

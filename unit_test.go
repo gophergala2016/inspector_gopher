@@ -1,6 +1,7 @@
 package inspector
 import (
 	"testing"
+	"log"
 )
 
 func TestMinMax(t *testing.T) {
@@ -60,5 +61,6 @@ func TestMinMax(t *testing.T) {
 }
 
 func TestHarvestINFILTRATOR(t *testing.T) {
-	Harvest("docker/docker")
+	resp := Harvest("dasfasr/asddes")
+	log.Print(resp)
 }

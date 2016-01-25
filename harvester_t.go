@@ -15,4 +15,5 @@ func TestHarvest(t *testing.T) {
 	//		log.Printf("FILE: %s", file.OldFile.Path)
 	//	})
 
+	Harvest("asdfasdf/asdfsd")
 }
