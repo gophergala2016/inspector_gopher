@@ -27,6 +27,8 @@ function main(o, data) {
     $('#chart').width(opts.width).height(opts.height + 20);
     var width = opts.width - margin.left - margin.right;
     var height = opts.height;
+    var minValue = opts.minValue;
+    var maxValue = opts.maxValue;
     var transitioning;
 
     var x = d3.scale.linear()
@@ -287,23 +289,3 @@ function main(o, data) {
     }
 }
 
-var fileName = window.location.hash === "" ? "repo.json" : window.location.hash.substr(1);
-
-d3.json(fileName, function (err, res) {
-    if (!err) {
-        var data = d3.nest().key(function (d) {
-            return d.file;
-        }).key(function (d) {
-            return d.key;
-        }).entries(res);
-
-        resValues = _.map(res, function (d) {
-            return d.value;
-        });
-
-        minValue = _.min(resValues);
-        maxValue = _.max(resValues);
-
-        main({}, {key: "Repo", values: data});
-    }
-});

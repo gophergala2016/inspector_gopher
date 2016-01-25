@@ -6,6 +6,7 @@ myApp.controller('IndexCtrl', ['$scope', '$interval', '$timeout', function ($sco
     $scope.pageIndex = 1;
     $scope.loading = false;
     $scope.quote = quotes[Math.floor(Math.random() * quotes.length)];
+    $scope.query = "";
 
     $scope.data = {
         files: [],
@@ -16,50 +17,79 @@ myApp.controller('IndexCtrl', ['$scope', '$interval', '$timeout', function ($sco
     var quoteInterval;
 
     $scope.search = function () {
+        if ($scope.query.search(/\w+\/\w+/i) == -1) {
+            alert("Please insert a valid repo name!");
+            return;
+        }
+
         $scope.loading = true;
 
         quoteInterval = $interval(function () {
             $scope.quote = quotes[Math.floor(Math.random() * quotes.length)];
         }, 2000);
 
-        $timeout(function () {
-            $interval.cancel(quoteInterval);
-            $scope.loading = false;
-            $scope.pageIndex = 2;
 
-            $scope.data.files = [
-                "This is a file name1",
-                "This is a file name2",
-                "This is a file name3",
-                "This is a file name4",
-                "This is a file name5",
-                "This is a file name6",
-                "This is a file name7",
-                "This is a file name8"
-            ];
+        d3.json("//127.0.0.1:8080/analyze?repo=" + $scope.query, function (err, res) {
+            if (!err) {
+                res = _.map(res, function (resEntry) {
+                    resEntry.value = parseFloat(resEntry.value)
+                    return resEntry;
+                });
 
-            $scope.data.commits = [
-                "This is a commit name1",
-                "This is a commit name2",
-                "This is a commit name3",
-                "This is a commit name4",
-                "This is a commit name5",
-                "This is a commit name6",
-                "This is a commit name7",
-                "This is a commit name8"
-            ];
+                var data = d3.nest().key(function (d) {
+                    return d.file;
+                }).key(function (d) {
+                    return d.key;
+                }).entries(res);
 
-            $scope.data.stats = [
-                "This is a stat name1",
-                "This is a stat name2",
-                "This is a stat name3",
-                "This is a stat name4",
-                "This is a stat name5",
-                "This is a stat name6",
-                "This is a stat name7",
-                "This is a stat name8"
-            ];
-        }, 4000);
+                var resValues = _.map(res, function (d) {
+                    return d3.format()(d.value);
+                });
+
+                var minValue = _.min(resValues);
+                var maxValue = _.max(resValues);
+
+                main({minValue: minValue, maxValue: maxValue}, {key: "Repo", values: data});
+
+                $interval.cancel(quoteInterval);
+                $scope.loading = false;
+                $scope.pageIndex = 2;
+
+                $scope.data.files = [
+                    "This is a file name1",
+                    "This is a file name2",
+                    "This is a file name3",
+                    "This is a file name4",
+                    "This is a file name5",
+                    "This is a file name6",
+                    "This is a file name7",
+                    "This is a file name8"
+                ];
+
+                $scope.data.commits = [
+                    "This is a commit name1",
+                    "This is a commit name2",
+                    "This is a commit name3",
+                    "This is a commit name4",
+                    "This is a commit name5",
+                    "This is a commit name6",
+                    "This is a commit name7",
+                    "This is a commit name8"
+                ];
+
+                $scope.data.stats = [
+                    "This is a stat name1",
+                    "This is a stat name2",
+                    "This is a stat name3",
+                    "This is a stat name4",
+                    "This is a stat name5",
+                    "This is a stat name6",
+                    "This is a stat name7",
+                    "This is a stat name8"
+                ];
+                $scope.$apply();
+            }
+        });
     };
 
 }]);
