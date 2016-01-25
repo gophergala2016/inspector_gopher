@@ -4,9 +4,7 @@ import (
 	"math"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"log"
-	"time"
 )
 
 type block struct {
@@ -32,26 +30,32 @@ func (b block) MarshalJSON() ([]byte, error) {
 func AnalyzeRepo(repoName string) (returnBlocks []block) {
 	//	everything := Harvest(repoName)
 
-	everything := example()
+	everything := Harvest(repoName)
 
 
+	if everything == nil {
+		return returnBlocks
+	}
+
+
+	log.Printf("%v", everything)
 	//	absoluteTotalNumberOfCommits := len(everything.Commits)
 
+	totalNumberOfCommits := len(everything.Commits)
 	for _, file := range everything.Files {
 
-		totalNumberOfCommits := len(file.Commits)
 
 		for _, unit := range file.Units {
 
-			numberOfCommits := len(unit.Commits)
+			numberOfCommits := unit.TimesChanged
 
-			//BULLSHIT START
-			rand.Seed(time.Now().UTC().UnixNano())
-
-			numberOfCommits = rand.Intn(100) + 1
-			totalNumberOfCommits = rand.Intn(30) + numberOfCommits
-			//BULLSHIT END
-
+//			//BULLSHIT START
+//			rand.Seed(time.Now().UTC().UnixNano())
+//
+//			numberOfCommits = rand.Intn(100) + 1
+//			totalNumberOfCommits = rand.Intn(30) + numberOfCommits
+//			//BULLSHIT END
+//
 			log.Println("-----")
 			log.Printf("%d", totalNumberOfCommits)
 			log.Printf("%d", numberOfCommits)

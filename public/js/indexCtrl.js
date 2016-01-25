@@ -29,7 +29,7 @@ myApp.controller('IndexCtrl', ['$scope', '$interval', '$timeout', function ($sco
         }, 2000);
 
 
-        d3.json("//127.0.0.1:8080/analyze?repo=" + $scope.query, function (err, res) {
+        d3.json("/analyze?repo=" + $scope.query, function (err, res) {
             if (!err) {
                 res = _.map(res, function (resEntry) {
                     resEntry.value = parseFloat(resEntry.value)
