@@ -231,7 +231,8 @@ body {
 }
 
 #st-control-1:checked ~ .st-scroll #st-panel-1 p,
-#st-control-2:checked ~ .st-scroll #st-panel-2 p {
+#st-control-2:checked ~ .st-scroll #st-panel-2 p,
+.list-group-item {
     -webkit-animation: moveUp 0.6s ease-in-out 0.2s backwards;
     -moz-animation: moveUp 0.6s ease-in-out 0.2s backwards;
     -o-animation: moveUp 0.6s ease-in-out 0.2s backwards;
@@ -444,14 +445,110 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    overflow-y: scroll;
     display: block;
 }
 
-#repo-text p {
-    position: inherit;
+#repo-text .row {
+    height: 100%;
+}
+
+.repo-column {
+    height: 100%;
+}
+
+.repo-column ul, .repo-column ul li {
+    border: none;
+}
+
+.repo-column .column-header {
     width: 100%;
-    margin: 0;
-    text-align: left;
-    color: white;
+    height: 30px;
+    position: static;
+    font-size: 20px;
+    font-weight: 600;
+    color: white !important;
+}
+
+#left-column {
+    background-color: #EF9A9A;
+    padding: 0;
+}
+
+#left-column .list-group li {
+    font-size: 20px;
+    color: white !important;
+}
+
+#left-column .list-group li:nth-child(1n) {
+    background-color: #E57373;
+}
+
+#left-column .list-group li:nth-child(1n):hover {
+    background-color: #E57373;
+    opacity: 0.8;
+}
+
+#left-column .list-group li:nth-child(2n) {
+    background-color: #EF9A9A;
+}
+
+#left-column .list-group li:nth-child(2n):hover {
+    background-color: #e78f8f;
+    opacity: 0.8;
+}
+
+#middle-column {
+    background-color: #AED581;
+    padding: 0;
+}
+
+#middle-column .list-group li {
+    font-size: 20px;
+    color: white !important;
+}
+
+#middle-column .list-group li:nth-child(1n) {
+    background-color: #C5E1A5;
+}
+
+#middle-column .list-group li:nth-child(1n):hover {
+    background-color: #C5E1A5;
+    opacity: 0.8;
+}
+
+#middle-column .list-group li:nth-child(2n) {
+    background-color: #AED581;
+}
+
+#middle-column .list-group li:nth-child(2n):hover {
+    background-color: #a3c976;
+    opacity: 0.8;
+}
+
+#right-column {
+    background-color: #B39DDB;
+    padding: 0;
+}
+
+#right-column .list-group li {
+    font-size: 20px;
+    color: white !important;
+}
+
+#right-column .list-group li:nth-child(1n) {
+    background-color: #D1C4E9;
+}
+
+#right-column .list-group li:nth-child(1n):hover {
+    background-color: #D1C4E9;
+    opacity: 0.8;
+}
+
+#right-column .list-group li:nth-child(2n) {
+    background-color: #B39DDB;
+}
+
+#right-column .list-group li:nth-child(2n):hover {
+    background-color: #9f8fc6;
+    opacity: 0.8;
 }
