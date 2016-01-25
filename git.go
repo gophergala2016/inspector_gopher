@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-const MAX_DEPTH = 200
+const MAX_DEPTH = 50
 
 var tempDir string
 var repoName string
@@ -139,66 +139,6 @@ func WalkCommits(repo *git.Repository, walkerFunc CommitWalkerFunc) error {
 
 	return nil
 }
-
-func WalkDepthCommits(repo *git.Repository, depth int, walkerFunc CommitWalkerFunc) error {
-	if repo == nil {
-		return errors.New("[FAIL] No repo supplied")
-	}
-
-	walker, err := repo.Walk()
-	if err != nil {
-		return err
-	}
-	defer walker.Free()
-
-	walker.Sorting(git.SortTopological | git.SortReverse)
-	err = walker.PushHead()
-	if err != nil {
-		return err
-	}
-	log.Println("[START] Walk commits")
-	defer log.Printf("[SUCCESS] Walk commits")
-
-	var previousCommit *git.Commit
-	commitNumber := 0
-	log.Println("[START] Getting number of commits")
-	numberOfCommits, _ := GetNumberOfCommits(repo)
-	log.Printf("[SUCCESS] Getting number of commits")
-
-	err = walker.Iterate(func(commit *git.Commit) bool {
-		if previousCommit == nil {
-			log.Println("[PROCESS] Skipped first commit")
-			previousCommit = commit
-			return true
-		}
-
-		defer func() {
-			log.Println("[PROCESS] Cleaned up commit")
-			previousCommit.Free()
-			previousCommit = commit
-			commitNumber += 1
-		}()
-
-		if (commitNumber + 1 < numberOfCommits - depth) {
-			log.Println("[PROCESS] Skipped out of depth commit")
-			return true
-		}
-
-		log.Println("[START] Execute callback")
-		defer log.Println("[SUCCESS] Execute callback")
-		return walkerFunc(previousCommit, commit)
-	})
-	if err != nil {
-		return err
-	}
-
-	if previousCommit != nil {
-		previousCommit.Free()
-	}
-
-	return nil
-}
-
 
 func GetDiff(repo *git.Repository, previousCommit *git.Commit, currentCommit *git.Commit) (*git.Diff, error) {
 	previousTree, err := previousCommit.Tree()

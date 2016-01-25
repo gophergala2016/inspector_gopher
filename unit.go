@@ -3,6 +3,7 @@ package inspector
 import (
 	"time"
 	"fmt"
+	"math"
 )
 
 // Types of unit.
@@ -13,7 +14,7 @@ const (
 )
 
 type Everything struct {
-	Files map[string]*File
+	Files   map[string]*File
 	Commits map[string]*Commit
 }
 
@@ -35,7 +36,7 @@ type Unit struct {
 	LineStart    int
 	LineEnd      int
 
-	RatioSum     int
+	RatioSum     float64
 	TimesChanged int
 
 	Commits      []*Commit
@@ -70,6 +71,16 @@ func (u1 *Unit) InRange(u2 *Unit) bool {
 // Checks if either the beginning or the end line are contained in the hunk
 func (u1 *Unit) Intersects(u2 *Unit) bool {
 	return (u1.LineStart >= u2.LineStart && u1.LineStart <= u2.LineEnd) || (u1.LineEnd >= u2.LineStart && u1.LineEnd <= u2.LineEnd)
+}
+
+func (u1 *Unit) IntersectsInt(start, end int) bool {
+	return (u1.LineStart >= start && u1.LineStart <= end) || (u1.LineEnd >= start && u1.LineEnd <= end)
+}
+
+func (u Unit) numberOfLinesIntersected(start, end int) int {
+	max := math.Min(float64(u.LineEnd), float64(end + 1))
+	min := math.Max(float64(u.LineStart), float64(start))
+	return int(math.Max(0.0, max - min))
 }
 
 // Number of lines that the Unit has

@@ -41,7 +41,7 @@ func ParseFileContents(filePath string, contents string) *File {
 				LineStart: fset.Position(x.Body.Lbrace).Line,
 				LineEnd:   fset.Position(x.Body.Rbrace).Line,
 
-				RatioSum: 0,
+				RatioSum: 0.0,
 				TimesChanged: 0,
 
 				Commits: []*Commit{},
@@ -60,7 +60,7 @@ func ParseFileContents(filePath string, contents string) *File {
 					LineStart: fset.Position(x.Pos()).Line,
 					LineEnd:   fset.Position(x.End()).Line,
 
-					RatioSum: 0,
+					RatioSum: 0.0,
 					TimesChanged: 0,
 
 					Commits: []*Commit{},
