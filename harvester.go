@@ -131,12 +131,18 @@ func Harvest(repoName string) *Everything {
 						files[file.NewFile.Path] = newFile
 					}
 				} else {
-					for _, u := range files[file.NewFile.Path].Units {
-						if u.Type == unit.Type && u.Name == unit.Name {
-							unit.TimesChanged = u.TimesChanged
-							unit.RatioSum = u.RatioSum
+					if files[newFile.Path] != nil {
+						for _, u := range files[newFile.Path].Units {
+							if u.Type == unit.Type && u.Name == unit.Name {
+								unit.TimesChanged = u.TimesChanged
+								unit.RatioSum = u.RatioSum
+							}
 						}
+					} else {
+						unit.RatioSum = 1
+						unit.TimesChanged++
 					}
+
 				}
 			}
 		})
