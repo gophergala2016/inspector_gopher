@@ -1,4 +1,24 @@
 # Inspector Gopher
+```
+    0225 GMT+1 Belgrade, Serbia
+
+    Dear comrades,
+
+        Our humble unit of four has failed to deliver.
+
+        Alas, our work will not be in vain!
+
+        Inspector Gopher will rise from the ashes of spilt coffee beans.
+
+        Sooner or later we will deliver.
+
+    Farewell.
+
+    P.S. At least we spun up a 2x 128GB Bare metal on Softlayer
+
+    P.P.S We also bought 2 domain names. - OUR BRAND IS SAFE
+
+```
 <img src="https://raw.githubusercontent.com/gophergala2016/inspector_gopher/master/public/inspector_gufer_ready.png" align="right"/>
 
 ### Google Trends for your repo
