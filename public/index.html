@@ -80,8 +80,8 @@
                                 Most changed files
                             </p>
                             <ul class="list-group">
-                                <li ng-repeat="file in data.files" class="list-group-item">
-                                    {{ file }}
+                                <li ng-repeat="file in data.files | orderBy:'-value'" class="list-group-item">
+                                    {{ file.key }}
                                 </li>
                             </ul>
                         </div>
