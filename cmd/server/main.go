@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"encoding/json"
 )
 
@@ -43,18 +42,6 @@ func main() {
 	})
 
 	fmt.Println("Starting to serve!")
-	http.HandleFunc("/benchmark", func(w http.ResponseWriter, r *http.Request) {
-		repoUrl := r.URL.Query().Get("repo")
-		depth := r.URL.Query().Get("depth")
-
-		f, _ := strconv.ParseInt(depth, 0, 0)
-		log.Printf("repoName: %s, depth: %d", repoUrl, f)
-
-		time := inspector.HarvestBenched(repoUrl, int(f))
-
-		w.Write([]byte(fmt.Sprintf("%f", time)))
-		w.WriteHeader(200)
-	})
 	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		repoUrl := r.URL.Query().Get("repo")
 		coordinator := inspector.NewCoordinator(repoUrl)
