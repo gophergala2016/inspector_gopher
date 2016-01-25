@@ -80,7 +80,7 @@ myApp.controller('IndexCtrl', ['$scope', '$interval', '$timeout', function ($sco
                 //    "This is a stat name7",
                 //    "This is a stat name8"
                 //];
-                //$scope.$apply();
+                $scope.$apply();
             }
         });
     };
