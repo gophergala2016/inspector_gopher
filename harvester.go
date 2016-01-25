@@ -115,10 +115,10 @@ func Harvest(repoName string) *Everything {
 			}
 
 			for _, unit := range newFile.Units {
+				unit.TimesChanged++
 				if unit.IntersectsInt(hunk.NewStart, hunk.NewStart + hunk.NewLines) {
 					magicNumber := unit.numberOfLinesIntersected(hunk.NewStart, hunk.NewStart + hunk.NewLines) * len(commits)
 					unit.RatioSum += float64(magicNumber) * float64(count) / float64(numberOfCommits)
-					unit.TimesChanged += 1
 					unit.Commits = append(unit.Commits, newestCommit)
 					if files[file.NewFile.Path] != nil {
 						for _, u := range files[file.NewFile.Path].Units {
@@ -138,12 +138,11 @@ func Harvest(repoName string) *Everything {
 								unit.RatioSum = u.RatioSum
 							}
 						}
-					} else {
-						unit.RatioSum = 1
-						unit.TimesChanged++
 					}
 
 				}
+
+				files[newFile.Path] = newFile
 			}
 		})
 
