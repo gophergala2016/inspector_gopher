@@ -60,6 +60,7 @@ func AnalyzeRepo(repoName string) (returnBlocks []block) {
 			log.Println("-----")
 			log.Printf("%d", totalNumberOfCommits)
 			log.Printf("%d", numberOfCommits)
+			log.Printf("%f", unit.RatioSum)
 			log.Printf("%f", unit.RatioSum / float64(numberOfCommits))
 			log.Printf("%f", float64(totalNumberOfCommits) / float64(numberOfCommits))
 			log.Printf("%f", math.Log(float64(totalNumberOfCommits / numberOfCommits)))
