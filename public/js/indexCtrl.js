@@ -55,38 +55,31 @@ myApp.controller('IndexCtrl', ['$scope', '$interval', '$timeout', function ($sco
                 $scope.loading = false;
                 $scope.pageIndex = 2;
 
-                $scope.data.files = [
-                    "This is a file name1",
-                    "This is a file name2",
-                    "This is a file name3",
-                    "This is a file name4",
-                    "This is a file name5",
-                    "This is a file name6",
-                    "This is a file name7",
-                    "This is a file name8"
-                ];
+                $scope.data.files = _.map(data, function (d) {
+                    return {key: d.key, value: d.value};
+                });
 
-                $scope.data.commits = [
-                    "This is a commit name1",
-                    "This is a commit name2",
-                    "This is a commit name3",
-                    "This is a commit name4",
-                    "This is a commit name5",
-                    "This is a commit name6",
-                    "This is a commit name7",
-                    "This is a commit name8"
-                ];
-
-                $scope.data.stats = [
-                    "This is a stat name1",
-                    "This is a stat name2",
-                    "This is a stat name3",
-                    "This is a stat name4",
-                    "This is a stat name5",
-                    "This is a stat name6",
-                    "This is a stat name7",
-                    "This is a stat name8"
-                ];
+                //$scope.data.commits = [
+                //    "This is a commit name1",
+                //    "This is a commit name2",
+                //    "This is a commit name3",
+                //    "This is a commit name4",
+                //    "This is a commit name5",
+                //    "This is a commit name6",
+                //    "This is a commit name7",
+                //    "This is a commit name8"
+                //];
+                //
+                //$scope.data.stats = [
+                //    "This is a stat name1",
+                //    "This is a stat name2",
+                //    "This is a stat name3",
+                //    "This is a stat name4",
+                //    "This is a stat name5",
+                //    "This is a stat name6",
+                //    "This is a stat name7",
+                //    "This is a stat name8"
+                //];
                 $scope.$apply();
             }
         });
