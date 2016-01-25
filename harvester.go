@@ -4,9 +4,15 @@ import (
 	"github.com/libgit2/git2go"
 	"log"
 	"strings"
+	"net/http"
 )
 
 func Harvest(repoName string) *Everything {
+	resp, _ := http.Get("http://github.com/" + repoName)
+	if resp.StatusCode == 404 {
+		return nil
+	}
+
 	repo, _ := GetRepo(repoName)
 	defer repo.Free()
 	defer CleanTempDir()
