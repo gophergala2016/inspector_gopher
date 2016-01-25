@@ -3,7 +3,6 @@ package inspector
 import (
 	"github.com/libgit2/git2go"
 	"log"
-	"time"
 	"strings"
 )
 
@@ -12,8 +11,13 @@ func Harvest(repoName string) *Everything {
 	defer repo.Free()
 	defer CleanTempDir()
 
-
+	var everything *Everything = &Everything{}
 	var files map[string]*File = make(map[string]*File)
+	var commits map[string]*Commit = make(map[string]*Commit)
+	everything.Files = files
+	everything.Commits = commits
+
+	numberOfCommits, _ := GetNumberOfCommits(repo)
 
 	count := 0
 	WalkCommits(repo, func(previousCommit *git.Commit, currentCommit *git.Commit) bool {
@@ -39,60 +43,93 @@ func Harvest(repoName string) *Everything {
 			log.Printf("[Success] Create base tree")
 			return true
 		}
+		count++
 
 		diff, _ := GetDiff(repo, previousCommit, currentCommit)
 
-//		var commitFiles map[string]*File = make(map[string]*File)
+		newestCommit := &Commit{
+			Hash: currentCommit.Id().String(),
+			Contributor: nil,
+			Message: currentCommit.Message(),
+			Time: currentCommit.Author().When,
+		}
 
+		commits[newestCommit.Hash] = newestCommit
+		var commitFiles map[string]*File = make(map[string]*File)
+
+		var checked map[string]bool = map[string]bool{}
 		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
 			if !strings.HasSuffix(strings.ToLower(file.OldFile.Path), ".go") {
 				return
 			}
 
-			blob, err := repo.LookupBlob(file.OldFile.Oid)
-			if err != nil {
-				return
+			var newFile *File
+			if commitFiles[file.NewFile.Path] != nil {
+				newFile = commitFiles[file.NewFile.Path]
+			} else {
+				blob, err := repo.LookupBlob(file.NewFile.Oid)
+				if err != nil {
+					return
+				}
+
+				newFile = ParseFileContents(file.NewFile.Path, string(blob.Contents()))
 			}
 
-//			var newFile *File
-//			if commitFiles[file.NewFile.Path] != nil {
-//				newFile = commitFiles[file.NewFile.Path]
-//			} else {
-//				newFile = ParseFileContents()
-//			}
+			if files[newFile.Path] != nil {
+				files[file.OldFile.Path] = newFile
+			}
 
-			astFile := ParseFileContents(file.OldFile.Path, string(blob.Contents()))
+			if !checked[newFile.Path] {
+				checked[newFile.Path] = true
+				if files[newFile.Path] != nil {
+					remove := []int{}
+					for i, u := range files[newFile.Path].Units {
+						for _, un := range newFile.Units {
+							if u.Type == un.Type && u.Name == un.Name {
+								remove = append(remove, i)
+							}
+						}
+					}
+					newUnits := []*Unit{}
+					for i, unit := range files[newFile.Path].Units {
+						ff := false
+						for _, j := range remove {
+							if i == j {
+								ff = true
+							}
+						}
+						if !ff {
+							newUnits = append(newUnits, unit)
+						}
+						files[newFile.Path].Units = newUnits
+					}
+				} else {
+					files[newFile.Path] = newFile
+				}
+			}
 
-			files[file.OldFile.Path] = astFile
+			for _, unit := range newFile.Units {
+				if unit.IntersectsInt(hunk.NewStart, hunk.NewStart + hunk.NewLines) {
+					magicNumber := unit.numberOfLinesIntersected(hunk.NewStart, hunk.NewStart + hunk.NewLines) * len(commits)
+					unit.RatioSum += float64(magicNumber) * float64(count) / float64(numberOfCommits)
+					unit.TimesChanged += 1
+					unit.Commits = append(unit.Commits, newestCommit)
+					if files[file.NewFile.Path] != nil {
+						for _, u := range files[file.NewFile.Path].Units {
+							if u.Type == unit.Type && u.Name == unit.Name {
+								u.LineStart = unit.LineStart
+								u.LineEnd = unit.LineEnd
+							}
+						}
+					} else {
+						files[file.NewFile.Path] = newFile
+					}
+				}
+			}
 		})
 
 		return true
 	})
 
-
-	log.Println(count)
-
-	return &Everything{}
-}
-
-func HarvestBenched(repoName string, depth int) float64 {
-	repo, _ := GetRepo(repoName)
-	defer repo.Free()
-	defer CleanTempDir()
-
-	start := time.Now()
-	count := 0
-	WalkDepthCommits(repo, depth, func(previousCommit *git.Commit, currentCommit *git.Commit) bool {
-		diff, _ := GetDiff(repo, previousCommit, currentCommit)
-
-		WalkHunks(diff, func(file git.DiffDelta, hunk git.DiffHunk) {
-			count += 1
-		})
-
-		return true
-	})
-
-	log.Println(count)
-
-	return time.Since(start).Seconds()
+	return everything
 }
